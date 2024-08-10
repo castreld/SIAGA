@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <ImageButton
+        android:id="@+id/settingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/settings"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="25dp"/>
+
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="95dp"
+        android:background="@drawable/siaga"
+        android:layout_marginLeft="150dp"
+        android:layout_marginTop="50dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SIAGA"
+        android:textColor="@color/black"
+        android:textSize="60dp"
+        android:layout_marginLeft="115dp"
+        android:layout_marginTop="-10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GAS VALUE"
+        android:textColor="@color/black"
+        android:textSize="18.5dp"
+        android:layout_marginLeft="150dp"
+        android:layout_marginTop="70dp"/>
+
+    <TextView
+        android:id="@+id/gasOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" 0000 "
+        android:textColor="@color/black"
+        android:background="@drawable/border_rounded_black"
+        android:textSize="80dp"
+        android:layout_marginLeft="85dp"/>
+
+    <Button
+        android:id="@+id/fanButton"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:background="@drawable/button_rounded_disabled"
+        android:enabled="false"
+        android:layout_marginLeft="62dp"
+        android:layout_marginTop="25dp"
+        android:text="FAN \n OFF"
+        android:textSize="30dp"
+        android:textColor="@color/white"
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/alarmButton"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:background="@drawable/button_rounded_disabled"
+        android:enabled="false"
+        android:layout_marginLeft="213dp"
+        android:layout_marginTop="-130.5dp"
+        android:text="ALARM \n OFF"
+        android:textSize="30dp"
+        android:textColor="@color/white"
+        android:textAlignment="center"/>
+
+
+</LinearLayout>
