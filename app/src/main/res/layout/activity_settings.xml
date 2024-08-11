@@ -23,17 +23,22 @@
         android:layout_width="350dp"
         android:layout_height="200dp"
         android:background="@drawable/border_rounded_black"
-        app:boxBackgroundMode="none">
+        app:boxBackgroundMode="none"
+        android:layout_gravity="center">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="  CUSTOM NOTIFICATION..."
-            android:textSize="15dp"
-            android:background="@null"/>
+            android:layout_height="match_parent"
+            android:hint="CUSTOM NOTIFICATION..."
+            android:textSize="15sp"
+            android:background="@null"
+            android:gravity="top|start"
+            android:padding="10dp"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+
     <Button
+        android:id="@+id/submitButton"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:background="@drawable/button_rounded_black"
@@ -54,6 +59,7 @@
         android:layout_marginRight="120dp"/>
 
     <Switch
+        android:id="@+id/vibrationSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:scaleX="2.5"

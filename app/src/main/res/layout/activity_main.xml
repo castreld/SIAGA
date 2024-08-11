@@ -45,11 +45,11 @@
         android:id="@+id/gasOut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="85dp"
+        android:background="@drawable/border_rounded_black"
         android:text=" 0000 "
         android:textColor="@color/black"
-        android:background="@drawable/border_rounded_black"
-        android:textSize="80dp"
-        android:layout_marginLeft="85dp"/>
+        android:textSize="80dp" />
 
     <Button
         android:id="@+id/fanButton"
