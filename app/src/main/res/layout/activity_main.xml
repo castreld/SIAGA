@@ -51,6 +51,7 @@
         android:background="@drawable/border_rounded_black">
 
         <TextView
+            android:id="@+id/gasOut"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="0000"
