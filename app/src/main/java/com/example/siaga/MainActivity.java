@@ -2,35 +2,78 @@ package com.example.siaga;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.content.ContextCompat;
 
-public class MainActivity extends AppCompatActivity {
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
+public class MainActivity extends AppCompatActivity {
+    private TextView gasOutTextView;
+    private OkHttpClient client;
+    private Handler handler;
     private Button fanButton;
     private Button alarmButton;
     private boolean isFanOn = false;
     private boolean isAlarmOn = false;
+    final String TAG = "DEMO";
+    private String produkId = "78A3EE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
+        gasOutTextView = findViewById(R.id.gasOut);
+        client = new OkHttpClient();
+        handler = new Handler(Looper.getMainLooper());
         // Handle edge-to-edge insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        Request request = new Request.Builder()
+                .url("http://5.9.117.55:5026/api/apps/78A3EE").build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                if (response.isSuccessful()) {
+                    ResponseBody responseBody = response.body();
+                    Log.d(TAG, "onResponse: " + responseBody.string());
+                }
+            }
         });
 
         // Initialize buttons
@@ -58,6 +101,65 @@ public class MainActivity extends AppCompatActivity {
         updateFanButton();
         updateAlarmButton();
         settingButtonConfig();
+        fetchGasValue();
+    }
+
+    private void fetchGasValue() {
+        String url = "http://5.9.117.55:5026/api/apps/" + produkId;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.e("MainActivity", "Failed to fetch data from the server.", e);
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        String responseData = response.body().string();
+                        JSONObject jsonObject = new JSONObject(responseData);
+
+                        // Check the status code
+                        if (jsonObject.getInt("status") == 200) {
+                            JSONArray messageArray = jsonObject.getJSONArray("message");
+                            JSONObject data = messageArray.getJSONObject(0);
+
+                            // Extract the suhu value
+                            final int airQuality = data.getInt("suhu");
+
+                            // Update the UI on the main thread
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    gasOutTextView.setText(String.valueOf(airQuality));
+                                }
+                            });
+                        } else {
+                            Log.e("MainActivity", "Error: " + jsonObject.getString("message"));
+                        }
+
+                    } catch (JSONException e) {
+                        Log.e("MainActivity", "JSON parsing error.", e);
+                    }
+                } else {
+                    Log.e("MainActivity", "Unexpected response code: " + response.code());
+                }
+
+            }
+        });
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                fetchGasValue();
+            }
+        }, 1000);
     }
 
 
@@ -95,4 +197,6 @@ public class MainActivity extends AppCompatActivity {
             alarmButton.setText("ALARM \n OFF");
         }
     }
+
+
 }
