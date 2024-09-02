@@ -1,6 +1,15 @@
 package com.example.siaga;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,6 +21,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -42,14 +53,23 @@ public class MainActivity extends AppCompatActivity {
     private boolean isAlarmOn = false;
     final String TAG = "DEMO";
     private String produkId = "78A3EE";
+    int airQuality;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-
         setContentView(R.layout.activity_main);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
 
         gasOutTextView = findViewById(R.id.gasOut);
         client = new OkHttpClient();
@@ -67,9 +87,7 @@ public class MainActivity extends AppCompatActivity {
         fanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isFanOn = !isFanOn;
-                updateFanButton();
-                sendFanStateToServer();
+                toggleFan();
             }
         });
 
@@ -84,6 +102,59 @@ public class MainActivity extends AppCompatActivity {
         updateAlarmButton();
         settingButtonConfig();
         fetchGasValue();
+
+        // INI JUGA BELUM JADI EY
+        /*
+        makeNotification();
+         */
+    }
+
+    // INI BELUM JADI EY
+    /*
+    public void makeNotification() {
+        if (airQuality >= 300) {
+            String channelID = "CHANNEL_ID_NOTIFICAITON";
+
+            NotificationCompat.Builder builder =
+                    new NotificationCompat.Builder(getApplicationContext(), channelID);
+            builder.setSmallIcon(R.drawable.siaga)
+                    .setContentTitle("VIBRASI BERHASIL DIAKTIFKAN!")
+                    .setContentText("Vibrasi Notifikasi berhasil diaktifkan! sekarang Gadget anda akan bergetar ketika mendapat \n notifikasi dari kami!")
+                    .setAutoCancel(true)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra("data", "value");
+
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                    0, intent, PendingIntent.FLAG_MUTABLE);
+            builder.setContentIntent(pendingIntent);
+            NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel notificationChannel =
+                        notificationManager.getNotificationChannel(channelID);
+                if (notificationChannel == null) {
+                    int importance = NotificationManager.IMPORTANCE_HIGH;
+                    notificationChannel = new NotificationChannel(channelID,
+                            "Some Description", importance);
+                    notificationChannel.setLightColor(Color.GREEN);
+                    notificationChannel.enableVibration(true);
+                    notificationManager.createNotificationChannel(notificationChannel);
+                }
+            }
+
+            notificationManager.notify(0, builder.build());
+        }
+    }
+    */
+
+    private void toggleFan() {
+        isFanOn = !isFanOn;
+        updateFanButton();
+        sendFanStateToServer();
     }
 
     private void sendFanStateToServer() {
@@ -117,6 +188,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void updateFanButton() {
+        if (isFanOn) {
+            fanButton.setEnabled(true);
+            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
+            fanButton.setText("FAN \n ON");
+        } else {
+            fanButton.setEnabled(true);
+            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
+            fanButton.setText("FAN \n OFF");
+        }
+    }
+
     private void fetchGasValue() {
         String url = "http://5.9.117.55:5026/api/apps/" + produkId;
 
@@ -142,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                             JSONArray messageArray = jsonObject.getJSONArray("message");
                             JSONObject data = messageArray.getJSONObject(0);
 
-                            final int airQuality = data.getInt("suhu");
+                            airQuality = data.getInt("suhu");
                             final int buttonState = data.getInt("buttonState");
                             final int fanState = data.getInt("fanState");
 
@@ -177,29 +260,6 @@ public class MainActivity extends AppCompatActivity {
                 fetchGasValue();
             }
         }, 1000);
-    }
-
-    private void settingButtonConfig() {
-        ImageButton settingButton = findViewById(R.id.settingButton);
-
-        settingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, Settings.class));
-            }
-        });
-    }
-
-    private void updateFanButton() {
-        if (isFanOn) {
-            fanButton.setEnabled(true);
-            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
-            fanButton.setText("FAN \n ON");
-        } else {
-            fanButton.setEnabled(true);
-            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
-            fanButton.setText("FAN \n OFF");
-        }
     }
 
     private void toggleAlarm() {
@@ -249,6 +309,17 @@ public class MainActivity extends AppCompatActivity {
             alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
             alarmButton.setText("ALARM \n OFF");
         }
+    }
+
+    private void settingButtonConfig() {
+        ImageButton settingButton = findViewById(R.id.settingButton);
+
+        settingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, Settings.class));
+            }
+        });
     }
 }
 

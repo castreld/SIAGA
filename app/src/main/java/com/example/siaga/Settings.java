@@ -1,7 +1,14 @@
 package com.example.siaga;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -12,6 +19,7 @@ import android.widget.Switch;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -45,6 +53,7 @@ public class Settings extends AppCompatActivity {
 
             if (isChecked) {
                 vibratePhone();
+                makeNotification();
             }
         });
 
@@ -56,6 +65,45 @@ public class Settings extends AppCompatActivity {
                 showConfirmationDialog();
             }
         });
+    }
+
+    public void makeNotification() {
+        String channelID = "CHANNEL_ID_NOTIFICAITON";
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(getApplicationContext(), channelID);
+        builder.setSmallIcon(R.drawable.siaga)
+                .setContentTitle("VIBRASI BERHASIL DIAKTIFKAN!")
+                .setContentText("Vibrasi Notifikasi berhasil diaktifkan! sekarang Gadget anda akan bergetar ketika mendapat \n notifikasi dari kami!")
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("data", "value");
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, intent, PendingIntent.FLAG_MUTABLE);
+        builder.setContentIntent(pendingIntent);
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel =
+                    notificationManager.getNotificationChannel(channelID);
+            if (notificationChannel == null) {
+                int importance = NotificationManager.IMPORTANCE_HIGH;
+                notificationChannel = new NotificationChannel(channelID,
+                        "Some Description", importance);
+                notificationChannel.setLightColor(Color.GREEN);
+                notificationChannel.enableVibration(true);
+                notificationManager.createNotificationChannel(notificationChannel);
+            }
+        }
+
+
+        notificationManager.notify(0, builder.build());
+
     }
 
     private void showConfirmationDialog() {
