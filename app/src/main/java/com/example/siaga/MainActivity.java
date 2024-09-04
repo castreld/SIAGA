@@ -102,18 +102,15 @@ public class MainActivity extends AppCompatActivity {
         updateAlarmButton();
         settingButtonConfig();
         fetchGasValue();
-
-        // INI JUGA BELUM JADI EY
-        /*
+        checkAndMakeNotification();
         makeNotification();
-         */
     }
 
-    // INI BELUM JADI EY
-    /*
+    // INI JUGA BELUM JADI EY
+
     public void makeNotification() {
         if (airQuality >= 300) {
-            String channelID = "CHANNEL_ID_NOTIFICAITON";
+            String channelID = "CHANNEL_ID_NOTIFICATION";
 
             NotificationCompat.Builder builder =
                     new NotificationCompat.Builder(getApplicationContext(), channelID);
@@ -149,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
             notificationManager.notify(0, builder.build());
         }
     }
-    */
+
 
     private void toggleFan() {
         isFanOn = !isFanOn;
@@ -239,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     updateFanButton();
                                     updateAlarmButton();
+                                    checkAndMakeNotification();
                                 }
                             });
                         } else {
@@ -261,6 +259,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 1000);
     }
+
+
+    private boolean notificationSent = false;
+
+    private void checkAndMakeNotification() {
+        if (airQuality >= 300 && !notificationSent) {
+            makeNotification();
+            notificationSent = true;
+        }
+    }
+
+
 
     private void toggleAlarm() {
         isAlarmOn = !isAlarmOn;
@@ -322,5 +332,3 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 }
-
-// KONTOL

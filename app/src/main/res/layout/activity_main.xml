@@ -69,14 +69,14 @@
         android:id="@+id/fanButton"
         android:layout_width="130dp"
         android:layout_height="130dp"
-        android:background="@drawable/button_rounded_disabled"
-        android:enabled="false"
         android:layout_marginLeft="62dp"
         android:layout_marginTop="25dp"
+        android:background="@drawable/button_rounded_disabled"
+        android:enabled="false"
         android:text="FAN \n OFF"
-        android:textSize="30dp"
+        android:textAlignment="center"
         android:textColor="@color/white"
-        android:textAlignment="center"/>
+        android:textSize="30dp" />
 
     <Button
         android:id="@+id/alarmButton"
@@ -90,5 +90,27 @@
         android:textSize="30dp"
         android:textColor="@color/white"
         android:textAlignment="center"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center">
+
+        <Button
+            android:id="@+id/testButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TEST BUTTON"
+            android:layout_gravity="center" />
+
+        <Button
+            android:id="@+id/checkButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CHECK BUTTON"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
 
 </LinearLayout>
