@@ -115,8 +115,8 @@ public class MainActivity extends AppCompatActivity {
             NotificationCompat.Builder builder =
                     new NotificationCompat.Builder(getApplicationContext(), channelID);
             builder.setSmallIcon(R.drawable.siaga)
-                    .setContentTitle("VIBRASI BERHASIL DIAKTIFKAN!")
-                    .setContentText("Vibrasi Notifikasi berhasil diaktifkan! sekarang Gadget anda akan bergetar ketika mendapat \n notifikasi dari kami!")
+                    .setContentTitle("GAS ANDA BOCOR!")
+                    .setContentText("Segera panggil pemadam kebakaran jika anda tidak bisa mengatasinya sendiri!")
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
@@ -260,7 +260,6 @@ public class MainActivity extends AppCompatActivity {
         }, 1000);
     }
 
-
     private boolean notificationSent = false;
 
     private void checkAndMakeNotification() {
@@ -269,8 +268,6 @@ public class MainActivity extends AppCompatActivity {
             notificationSent = true;
         }
     }
-
-
 
     private void toggleAlarm() {
         isAlarmOn = !isAlarmOn;
