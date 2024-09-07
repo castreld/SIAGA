@@ -25,11 +25,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class Settings extends AppCompatActivity {
-
     private Switch vibrationSwitch;
     private static final String PREFS_NAME = "SettingsPrefs";
     private static final String VIBRATION_KEY = "vibration_switch_state";
     private Vibrator vibrator;
+
+    boolean switchState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,9 @@ public class Settings extends AppCompatActivity {
             if (isChecked) {
                 vibratePhone();
                 makeNotification();
+                switchState = true;
+            } else {
+                switchState = false;
             }
         });
 
@@ -151,6 +155,7 @@ public class Settings extends AppCompatActivity {
         boolean state = sharedPreferences.getBoolean(VIBRATION_KEY, false);
         vibrationSwitch.setChecked(state);
     }
+
 
     private void vibratePhone() {
         if (vibrator != null && vibrator.hasVibrator()) {

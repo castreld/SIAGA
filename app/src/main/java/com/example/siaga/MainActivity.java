@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
         }
         builder = new NotificationCompat.Builder(this, "Alert")
                 .setSmallIcon(R.drawable.siaga)
-                .setContentTitle("Peringatan Kualitas Udara")
-                .setContentText("Adanya gas bahaya terdeteksi! Segera lakukan tindakan pencegahan.")
+                .setContentTitle("PERINGATAN KUALITAS UDARA")
+                .setContentText("GAS BOCOR! SEGERA LAKUKAN TINDAKAN PENCEGAHAN DEMI KESELAMATAN ANDA!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setColor(ContextCompat.getColor(this, R.color.alertColor))
@@ -143,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
                 updateAlarmButton();
             }
         });
+
+        Intent serviceIntent = new Intent(this, NotificationService.class);
+        ContextCompat.startForegroundService(this, serviceIntent);
 
         // Update buttons' initial states
         updateFanButton();
@@ -229,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
             fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
             fanButton.setText("FAN \n ON");
         } else {
-            fanButton.setEnabled(true); // Change this to true
+            fanButton.setEnabled(true);
             fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
             fanButton.setText("FAN \n OFF");
         }
@@ -241,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
             alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
             alarmButton.setText("ALARM \n ON");
         } else {
-            alarmButton.setEnabled(true); // Change this to true
+            alarmButton.setEnabled(true);
             alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
             alarmButton.setText("ALARM \n OFF");
         }
