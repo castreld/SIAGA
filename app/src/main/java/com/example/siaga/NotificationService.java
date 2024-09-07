@@ -12,6 +12,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -28,6 +30,7 @@ import java.io.IOException;
 
 public class NotificationService extends Service {
 
+    public static final String ACTION_TRIGGER_NOTIFICATION = "com.example.siaga.TRIGGER_NOTIFICATION";
     private static final String CHANNEL_ID = "ForegroundServiceChannel";
     private OkHttpClient client;
     private Handler handler;
@@ -45,6 +48,11 @@ public class NotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        String action = intent.getAction();
+        if (ACTION_TRIGGER_NOTIFICATION.equals(action)) {
+            makeNotification();
+        }
+
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_MUTABLE);
 
@@ -77,6 +85,8 @@ public class NotificationService extends Service {
             public void run() {
                 fetchGasValue();
                 handler.postDelayed(this, 1000); // Repeat every 1000 ms
+                Log.d("GAS", String.valueOf(airQuality));
+
             }
         });
     }
@@ -88,7 +98,6 @@ public class NotificationService extends Service {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                // Handle failure
             }
 
             @Override
@@ -101,6 +110,7 @@ public class NotificationService extends Service {
                             JSONArray messageArray = jsonObject.getJSONArray("message");
                             JSONObject data = messageArray.getJSONObject(0);
                             airQuality = data.getInt("suhu");
+                            Log.d("GAS", String.valueOf(airQuality));
 
                             if (airQuality >= 300) {
                                 makeNotification();
@@ -114,7 +124,7 @@ public class NotificationService extends Service {
         });
     }
 
-    private void makeNotification() {
+    public void makeNotification() {
         String channelID = "CHANNEL_ID_NOTIFICATION";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), channelID)
                 .setSmallIcon(R.drawable.siaga)

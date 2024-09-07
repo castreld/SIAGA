@@ -1,14 +1,9 @@
 package com.example.siaga;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,16 +13,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,11 +37,12 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+
+import com.example.siaga.NotificationService;
 
 public class MainActivity extends AppCompatActivity {
     private TextView gasOutTextView;
@@ -53,148 +54,101 @@ public class MainActivity extends AppCompatActivity {
     private boolean isAlarmOn = false;
     final String TAG = "DEMO";
     private String produkId = "78A3EE";
-    int airQuality;
+    private NotificationCompat.Builder builder;
+    private NotificationManager notificationManager;
 
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+                Toast.makeText(MainActivity.this, "Post notification permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Post notification permission not granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(MainActivity.this,
-                    Manifest.permission.POST_NOTIFICATIONS) !=
-                    PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
-            }
-        }
-
         gasOutTextView = findViewById(R.id.gasOut);
         client = new OkHttpClient();
         handler = new Handler(Looper.getMainLooper());
-
+        // Handle edge-to-edge insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "Alert",
+                    "Air Quality Alerts",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("Notification for Air Quality Alerts");
+            notificationManager.createNotificationChannel(channel);
+        }
+        builder = new NotificationCompat.Builder(this, "Alert")
+                .setSmallIcon(R.drawable.siaga)
+                .setContentTitle("Peringatan Kualitas Udara")
+                .setContentText("Adanya gas bahaya terdeteksi! Segera lakukan tindakan pencegahan.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setColor(ContextCompat.getColor(this, R.color.alertColor))
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("Adanya gas bahaya terdeteksi! Kadar gas mencapai tingkat berbahaya. Segera lakukan tindakan pencegahan untuk memastikan keselamatan.")); // Expanded text for more detail
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            activityResultLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+        }
+        Request request = new Request.Builder()
+                .url("http://5.9.117.55:5026/api/apps/78A3EE").build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                if (response.isSuccessful()) {
+                    ResponseBody responseBody = response.body();
+                    Log.d(TAG, "onResponse: " + responseBody.string());
+                }
+            }
+        });
+
+        // Initialize buttons
         fanButton = findViewById(R.id.fanButton);
         alarmButton = findViewById(R.id.alarmButton);
 
+        // Set click listeners to toggle button states
         fanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleFan();
+                isFanOn = !isFanOn; // Toggle the state
+                updateFanButton();
             }
         });
 
         alarmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleAlarm();
+                isAlarmOn = !isAlarmOn; // Toggle the state
+                updateAlarmButton();
             }
         });
 
+        // Update buttons' initial states
         updateFanButton();
         updateAlarmButton();
         settingButtonConfig();
         fetchGasValue();
-        checkAndMakeNotification();
-        makeNotification();
-    }
-
-    // INI JUGA BELUM JADI EY
-
-    public void makeNotification() {
-        if (airQuality >= 300) {
-            String channelID = "CHANNEL_ID_NOTIFICATION";
-
-            NotificationCompat.Builder builder =
-                    new NotificationCompat.Builder(getApplicationContext(), channelID);
-            builder.setSmallIcon(R.drawable.siaga)
-                    .setContentTitle("GAS ANDA BOCOR!")
-                    .setContentText("Segera panggil pemadam kebakaran jika anda tidak bisa mengatasinya sendiri!")
-                    .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.putExtra("data", "value");
-
-            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                    0, intent, PendingIntent.FLAG_MUTABLE);
-            builder.setContentIntent(pendingIntent);
-            NotificationManager notificationManager =
-                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel notificationChannel =
-                        notificationManager.getNotificationChannel(channelID);
-                if (notificationChannel == null) {
-                    int importance = NotificationManager.IMPORTANCE_HIGH;
-                    notificationChannel = new NotificationChannel(channelID,
-                            "Some Description", importance);
-                    notificationChannel.setLightColor(Color.GREEN);
-                    notificationChannel.enableVibration(true);
-                    notificationManager.createNotificationChannel(notificationChannel);
-                }
-            }
-
-            notificationManager.notify(0, builder.build());
-        }
-    }
-
-
-    private void toggleFan() {
-        isFanOn = !isFanOn;
-        updateFanButton();
-        sendFanStateToServer();
-    }
-
-    private void sendFanStateToServer() {
-        String url = "http://5.9.117.55:5026/api/apps/" + produkId + "/toggle-fan";
-        int fanStateToSend = isFanOn ? 1 : 0;
-
-        RequestBody requestBody = RequestBody.create(
-                MediaType.parse("application/json"),
-                "{\"fanState\": " + fanStateToSend + "}"
-        );
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.e("MainActivity", "Failed to update fan state on server.", e);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    Log.d("MainActivity", "Fan state updated successfully on the server.");
-                } else {
-                    Log.e("MainActivity", "Unexpected response code: " + response.code());
-                }
-            }
-        });
-    }
-
-    private void updateFanButton() {
-        if (isFanOn) {
-            fanButton.setEnabled(true);
-            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
-            fanButton.setText("FAN \n ON");
-        } else {
-            fanButton.setEnabled(true);
-            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
-            fanButton.setText("FAN \n OFF");
-        }
     }
 
     private void fetchGasValue() {
@@ -218,27 +172,23 @@ public class MainActivity extends AppCompatActivity {
                         String responseData = response.body().string();
                         JSONObject jsonObject = new JSONObject(responseData);
 
+                        // Check the status code
                         if (jsonObject.getInt("status") == 200) {
                             JSONArray messageArray = jsonObject.getJSONArray("message");
                             JSONObject data = messageArray.getJSONObject(0);
 
-                            airQuality = data.getInt("suhu");
-                            final int buttonState = data.getInt("buttonState");
-                            final int fanState = data.getInt("fanState");
+                            final int airQuality = data.getInt("suhu");
 
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     gasOutTextView.setText(String.valueOf(airQuality));
-
-                                    isFanOn = (fanState == 1);
-                                    isAlarmOn = (buttonState == 1);
-
-                                    updateFanButton();
-                                    updateAlarmButton();
-                                    checkAndMakeNotification();
                                 }
                             });
+
+                            if (airQuality >= 300) {
+                                notificationManager.notify(10, builder.build());
+                            }
                         } else {
                             Log.e("MainActivity", "Error: " + jsonObject.getString("message"));
                         }
@@ -249,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Log.e("MainActivity", "Unexpected response code: " + response.code());
                 }
+
             }
         });
 
@@ -260,66 +211,9 @@ public class MainActivity extends AppCompatActivity {
         }, 1000);
     }
 
-    private boolean notificationSent = false;
-
-    private void checkAndMakeNotification() {
-        if (airQuality >= 300 && !notificationSent) {
-            makeNotification();
-            notificationSent = true;
-        }
-    }
-
-    private void toggleAlarm() {
-        isAlarmOn = !isAlarmOn;
-        updateAlarmButton();
-        sendAlarmStateToServer();
-    }
-
-    private void sendAlarmStateToServer() {
-        String url = "http://5.9.117.55:5026/api/apps/" + produkId + "/toggle-buzzer";
-        int alarmStateToSend = isAlarmOn ? 1 : 0;
-
-        RequestBody requestBody = RequestBody.create(
-                MediaType.parse("application/json"),
-                "{\"alarmState\": " + alarmStateToSend + "}"
-        );
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.e("MainActivity", "Failed to update alarm state on server.", e);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    Log.d("MainActivity", "Alarm state updated successfully on the server.");
-                } else {
-                    Log.e("MainActivity", "Unexpected response code: " + response.code());
-                }
-            }
-        });
-    }
-
-    private void updateAlarmButton() {
-        if (isAlarmOn) {
-            alarmButton.setEnabled(true);
-            alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
-            alarmButton.setText("ALARM \n ON");
-        } else {
-            alarmButton.setEnabled(true);
-            alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
-            alarmButton.setText("ALARM \n OFF");
-        }
-    }
 
     private void settingButtonConfig() {
-        ImageButton settingButton = findViewById(R.id.settingButton);
+        ImageButton settingButton = (ImageButton) findViewById(R.id.settingButton);
 
         settingButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -328,4 +222,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void updateFanButton() {
+        if (isFanOn) {
+            fanButton.setEnabled(true);
+            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
+            fanButton.setText("FAN \n ON");
+        } else {
+            fanButton.setEnabled(true); // Change this to true
+            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
+            fanButton.setText("FAN \n OFF");
+        }
+    }
+
+    private void updateAlarmButton() {
+        if (isAlarmOn) {
+            alarmButton.setEnabled(true);
+            alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
+            alarmButton.setText("ALARM \n ON");
+        } else {
+            alarmButton.setEnabled(true); // Change this to true
+            alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
+            alarmButton.setText("ALARM \n OFF");
+        }
+    }
+
+
 }

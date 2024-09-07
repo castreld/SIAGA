@@ -69,14 +69,14 @@
         android:id="@+id/fanButton"
         android:layout_width="130dp"
         android:layout_height="130dp"
-        android:layout_marginLeft="62dp"
-        android:layout_marginTop="25dp"
         android:background="@drawable/button_rounded_disabled"
         android:enabled="false"
+        android:layout_marginLeft="62dp"
+        android:layout_marginTop="25dp"
         android:text="FAN \n OFF"
-        android:textAlignment="center"
+        android:textSize="30dp"
         android:textColor="@color/white"
-        android:textSize="30dp" />
+        android:textAlignment="center"/>
 
     <Button
         android:id="@+id/alarmButton"
