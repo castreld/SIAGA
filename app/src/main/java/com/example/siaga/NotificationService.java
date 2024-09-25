@@ -51,7 +51,7 @@ public class NotificationService extends Service {
 
         return START_STICKY;
     }
-//boom
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {

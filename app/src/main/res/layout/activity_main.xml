@@ -21,7 +21,7 @@
         android:layout_height="95dp"
         android:background="@drawable/siaga"
         android:layout_marginLeft="150dp"
-        android:layout_marginTop="50dp"/>
+        android:layout_marginTop="30dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -29,7 +29,7 @@
         android:text="SIAGA"
         android:textColor="@color/black"
         android:textSize="60dp"
-        android:layout_marginLeft="115dp"
+        android:layout_marginLeft="110dp"
         android:layout_marginTop="-10dp" />
 
     <TextView
@@ -37,14 +37,14 @@
         android:layout_height="wrap_content"
         android:text="GAS VALUE"
         android:textColor="@color/black"
-        android:textSize="18.5dp"
-        android:layout_marginLeft="150dp"
-        android:layout_marginTop="70dp"/>
+        android:textSize="30dp"
+        android:layout_marginLeft="120dp"
+        android:layout_marginTop="65dp"/>
 
     <LinearLayout
         android:layout_width="250dp"
         android:layout_height="100dp"
-        android:layout_marginLeft="76dp"
+        android:layout_marginLeft="78dp"
         android:orientation="vertical"
         android:gravity="center"
         android:textAlignment="center"
@@ -71,12 +71,14 @@
         android:layout_height="130dp"
         android:background="@drawable/button_rounded_disabled"
         android:enabled="false"
-        android:layout_marginLeft="62dp"
+        android:layout_marginLeft="65dp"
         android:layout_marginTop="25dp"
-        android:text="FAN \n OFF"
-        android:textSize="30dp"
+        android:text="FAN\nOFF"
+        android:textSize="30sp"
         android:textColor="@color/white"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:gravity="center"
+        android:padding="0dp" />
 
     <Button
         android:id="@+id/alarmButton"
@@ -86,10 +88,14 @@
         android:enabled="false"
         android:layout_marginLeft="213dp"
         android:layout_marginTop="-130.5dp"
-        android:text="ALARM \n OFF"
-        android:textSize="30dp"
+        android:text="ALARM\nOFF"
+        android:textSize="30sp"
         android:textColor="@color/white"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:gravity="center"
+        android:padding="0dp" />
+
+
 
 
 </LinearLayout>
