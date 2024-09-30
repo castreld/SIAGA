@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             activityResultLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
         }
         Request request = new Request.Builder()
-                .url("http://5.9.117.55:5026/api/apps/78A3EE").build();
+                .url("https://siaga.site/api/apps/78A3EE").build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchGasValue() {
-        String url = "http://5.9.117.55:5026/api/apps/" + produkId;
+        String url = "https://siaga.site/api/apps/" + produkId;
 
         Request request = new Request.Builder()
                 .url(url)
