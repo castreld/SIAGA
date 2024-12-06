@@ -1,101 +1,213 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
-
-    <ImageButton
-        android:id="@+id/settingButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="25dp"
-        android:layout_marginTop="40dp"
-        android:background="@drawable/settings" />
-
-    <ImageView
-        android:layout_width="80dp"
-        android:layout_height="95dp"
-        android:background="@drawable/siaga"
-        android:layout_marginLeft="150dp"
-        android:layout_marginTop="30dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SIAGA"
-        android:textColor="@color/black"
-        android:textSize="60dp"
-        android:layout_marginLeft="110dp"
-        android:layout_marginTop="-10dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="GAS VALUE"
-        android:textColor="@color/black"
-        android:textSize="30dp"
-        android:layout_marginLeft="120dp"
-        android:layout_marginTop="65dp"/>
+    android:fillViewport="true">
 
     <LinearLayout
-        android:layout_width="250dp"
-        android:layout_height="100dp"
-        android:layout_marginLeft="78dp"
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:background="@drawable/border_rounded_black">
+        android:background="#F8F9FA"
+        tools:context=".MainActivity">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:background="#2C3E50">
+
+            <ImageButton
+                android:id="@+id/settingButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/settings"
+                android:text="#ECF0F1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="24dp"
+                android:text="Gas Detector"
+                android:textColor="#ECF0F1"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginTop="16dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="95dp"
+                android:background="@drawable/siaga"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SIAGA"
+                android:textColor="#34495E"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:layout_marginTop="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/card_minimalist"
+                android:elevation="2dp"
+                android:padding="12dp"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Terendah"
+                    android:textColor="#34495E"
+                    android:textSize="16sp"/>
+
+                <TextView
+                    android:id="@+id/lowestGas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0000"
+                    android:textColor="#2C3E50"
+                    android:textSize="24sp"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/card_minimalist"
+                android:elevation="2dp"
+                android:padding="12dp"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tertinggi"
+                    android:textColor="#34495E"
+                    android:textSize="16sp"/>
+
+                <TextView
+                    android:id="@+id/highestGas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0000"
+                    android:textColor="#2C3E50"
+                    android:textSize="24sp"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/gasOut"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="0000"
-            android:textSize="85dp"
-            android:textAlignment="center"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GAS VALUE"
+            android:textColor="#34495E"
+            android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginTop="-10dp"/>
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"/>
+
+        <LinearLayout
+            android:layout_width="280dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/card_minimalist_dark"
+            android:elevation="3dp">
+
+            <TextView
+                android:id="@+id/gasOut"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="0000"
+                android:textSize="72sp"
+                android:textAlignment="center"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textColor="#ECF0F1"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp"
+            android:padding="16dp">
+
+            <Button
+                android:id="@+id/fanButton"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:background="@drawable/button_minimalist"
+                android:enabled="false"
+                android:layout_marginEnd="16dp"
+                android:text="FAN\nOFF"
+                android:textSize="24sp"
+                android:textColor="#34495E"
+                android:gravity="center"/>
+
+            <Button
+                android:id="@+id/alarmButton"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:background="@drawable/button_minimalist"
+                android:enabled="false"
+                android:layout_marginStart="16dp"
+                android:text="ALARM\nOFF"
+                android:textSize="24sp"
+                android:textColor="#34495E"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gas Level History"
+            android:textColor="#34495E"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"/>
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/gasChart"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_margin="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/card_minimalist"/>
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/fanButton"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:background="@drawable/button_rounded_disabled"
-        android:enabled="false"
-        android:layout_marginLeft="65dp"
-        android:layout_marginTop="25dp"
-        android:text="FAN\nOFF"
-        android:textSize="30sp"
-        android:textColor="@color/white"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:padding="0dp" />
-
-    <Button
-        android:id="@+id/alarmButton"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:background="@drawable/button_rounded_disabled"
-        android:enabled="false"
-        android:layout_marginLeft="213dp"
-        android:layout_marginTop="-130.5dp"
-        android:text="ALARM\nOFF"
-        android:textSize="30sp"
-        android:textColor="@color/white"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:padding="0dp" />
-
-
-
-
-</LinearLayout>
+</ScrollView>
