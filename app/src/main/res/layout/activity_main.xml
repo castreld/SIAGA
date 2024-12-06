@@ -87,7 +87,7 @@
                     android:textSize="16sp"/>
 
                 <TextView
-                    android:id="@+id/lowestGas"
+                    android:id="@+id/lowestGasOut"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0000"
@@ -115,7 +115,7 @@
                     android:textSize="16sp"/>
 
                 <TextView
-                    android:id="@+id/highestGas"
+                    android:id="@+id/highestGasOut"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0000"
@@ -202,7 +202,7 @@
             android:layout_marginTop="16dp"/>
 
         <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/gasChart"
+            android:id="@+id/gasChartOut"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:layout_margin="16dp"

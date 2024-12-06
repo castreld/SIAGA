@@ -43,11 +43,15 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import com.example.siaga.NotificationService;
+import com.github.mikephil.charting.charts.LineChart;
 
 public class MainActivity extends AppCompatActivity {
     private TextView gasOutTextView;
+    private TextView lowestGas;
+    private TextView highestGas;
     private OkHttpClient client;
     private Handler handler;
+    LineChart gasChart; // CAN KAGAWEKEUN
     private Button fanButton;
     private Button alarmButton;
     private boolean isFanOn = false;
@@ -68,12 +72,20 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    // Variables to store the lowest and highest gas values
+    private int lowestGasValue = Integer.MAX_VALUE; // Initialize to max value
+    private int highestGasValue = Integer.MIN_VALUE; // Initialize to min value
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
         gasOutTextView = findViewById(R.id.gasOut);
+        lowestGas = findViewById(R.id.lowestGasOut);
+        highestGas = findViewById(R.id.highestGasOut);
+
         client = new OkHttpClient();
         handler = new Handler(Looper.getMainLooper());
         // Handle edge-to-edge insets
@@ -83,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        // NOTIFIKASI
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -155,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
         fetchGasValue();
     }
 
+
+
     private void fetchGasValue() {
         String url = "https://siaga.site/api/apps/" + produkId;
 
@@ -166,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.e("MainActivity", "Failed to fetch data from the server.", e);
+                Log.e("MainActivity", "Teu kacokot ey datana wkwkw", e);
             }
 
             @Override
@@ -176,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
                         String responseData = response.body().string();
                         JSONObject jsonObject = new JSONObject(responseData);
 
-                        // Check the status code
                         if (jsonObject.getInt("status") == 200) {
                             JSONArray messageArray = jsonObject.getJSONArray("message");
                             JSONObject data = messageArray.getJSONObject(0);
@@ -187,12 +201,22 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     gasOutTextView.setText(String.valueOf(airQuality));
+
+                                    if (airQuality > 0 && airQuality < lowestGasValue) {
+                                        lowestGasValue = airQuality;
+                                        lowestGas.setText(String.valueOf(lowestGasValue));
+                                    }
+
+                                    if (airQuality > highestGasValue) {
+                                        highestGasValue = airQuality;
+                                        highestGas.setText(String.valueOf(highestGasValue));
+                                    }
+
+                                    if (airQuality >= 300) {
+                                        notificationManager.notify(10, builder.build());
+                                    }
                                 }
                             });
-
-                            if (airQuality >= 300) {
-                                notificationManager.notify(10, builder.build());
-                            }
                         } else {
                             Log.e("MainActivity", "Error: " + jsonObject.getString("message"));
                         }
@@ -203,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Log.e("MainActivity", "Unexpected response code: " + response.code());
                 }
-
             }
         });
 
