@@ -7,7 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".SplashScreen"
     tools:layout_editor_absoluteX="9dp"
-    tools:layout_editor_absoluteY="-7dp">
+    tools:layout_editor_absoluteY="-7dp"
+    android:background="@color/background">
 
     <ImageView
         android:id="@+id/imageView3"
@@ -46,10 +47,11 @@
         app:srcCompat="@drawable/siaga" />
 
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="(SISTEM INDIKATOR ALARM GAS AKTIF)"
-        android:textColor="@color/black"
+        android:textColor="@color/secColorTxt"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.525"
@@ -62,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="SIAGA"
-        android:textColor="@color/black"
+        android:textColor="@color/colorTxt"
         android:textSize="55dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

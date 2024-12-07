@@ -11,54 +11,60 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#F8F9FA"
+        android:background="@color/background"
         tools:context=".MainActivity">
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:background="#2C3E50">
+            android:padding="20dp"
+            android:background="#222325">
 
             <ImageButton
                 android:id="@+id/settingButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
                 android:background="@drawable/settings"
-                android:text="#ECF0F1"/>
+                android:text="#ECF0F1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="24dp"
-                android:text="Gas Detector"
+                android:text="MONITORING SIAGA"
                 android:textColor="#ECF0F1"
                 android:textSize="24sp"
-                android:textStyle="bold" />
-        </RelativeLayout>
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:layout_marginTop="16dp"
             android:gravity="center"
-            android:layout_marginTop="16dp">
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="80dp"
                 android:layout_height="95dp"
-                android:background="@drawable/siaga"/>
+                android:background="@drawable/siaga" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="SIAGA"
-                android:textColor="#34495E"
+                android:textColor="@color/colorTxt"
                 android:textSize="48sp"
-                android:textStyle="bold"
-                android:layout_marginTop="8dp"/>
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -82,8 +88,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Terendah"
-                    android:textColor="#34495E"
+                    android:text="Lowest"
+                    android:textColor="@color/colorTxt"
                     android:textSize="16sp"/>
 
                 <TextView
@@ -91,8 +97,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0000"
-                    android:textColor="#2C3E50"
                     android:textSize="24sp"
+                    android:textColor="@color/secColorTxt"
                     android:textStyle="bold"/>
             </LinearLayout>
 
@@ -110,8 +116,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tertinggi"
-                    android:textColor="#34495E"
+                    android:text="Highest"
+                    android:textColor="@color/colorTxt"
                     android:textSize="16sp"/>
 
                 <TextView
@@ -119,7 +125,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0000"
-                    android:textColor="#2C3E50"
+                    android:textColor="@color/secColorTxt"
                     android:textSize="24sp"
                     android:textStyle="bold"/>
             </LinearLayout>
@@ -129,7 +135,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="GAS VALUE"
-            android:textColor="#34495E"
+            android:textColor="@color/colorTxt"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_gravity="center"
@@ -141,7 +147,7 @@
             android:layout_gravity="center"
             android:orientation="vertical"
             android:layout_marginTop="8dp"
-            android:background="@drawable/card_minimalist_dark"
+            android:background="@drawable/card_minimalist"
             android:elevation="3dp">
 
             <TextView
@@ -170,24 +176,26 @@
                 android:id="@+id/fanButton"
                 android:layout_width="130dp"
                 android:layout_height="130dp"
-                android:background="@drawable/button_minimalist"
                 android:enabled="false"
                 android:layout_marginEnd="16dp"
-                android:text="FAN\nOFF"
+                android:text="FAN OFF"
                 android:textSize="24sp"
-                android:textColor="#34495E"
+                android:padding="15dp"
+                android:background="@color/disableComp"
+                android:textColor="@color/secColorTxt"
                 android:gravity="center"/>
 
             <Button
                 android:id="@+id/alarmButton"
                 android:layout_width="130dp"
                 android:layout_height="130dp"
-                android:background="@drawable/button_minimalist"
                 android:enabled="false"
                 android:layout_marginStart="16dp"
-                android:text="ALARM\nOFF"
+                android:text="ALARM OFF"
                 android:textSize="24sp"
-                android:textColor="#34495E"
+                android:padding="15dp"
+                android:background="@color/disableComp"
+                android:textColor="@color/secColorTxt"
                 android:gravity="center"/>
         </LinearLayout>
 
@@ -195,7 +203,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Gas Level History"
-            android:textColor="#34495E"
+            android:textColor="@color/colorTxt"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_gravity="center"

@@ -3,4 +3,11 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="alertColor">#FF0000</color>
+    <color name="background">#19191B</color>
+    <color name="interactiveComp">#292A2E</color>
+    <color name="disableComp">#222325</color>
+    <color name="enableComp">#0D2748</color>
+    <color name="colorCard">#46484F</color>
+    <color name="colorTxt">#EEEEF0</color>
+    <color name="secColorTxt">#B2B3BD</color>
 </resources>

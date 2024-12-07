@@ -254,11 +254,11 @@ public class MainActivity extends AppCompatActivity {
         if (isFanOn) {
             fanButton.setEnabled(true);
             fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
-            fanButton.setText("FAN \n ON");
+            fanButton.setText("FAN\nON");
         } else {
             fanButton.setEnabled(true);
             fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
-            fanButton.setText("FAN \n OFF");
+            fanButton.setText("FAN\nOFF");
         }
     }
 
@@ -266,13 +266,11 @@ public class MainActivity extends AppCompatActivity {
         if (isAlarmOn) {
             alarmButton.setEnabled(true);
             alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
-            alarmButton.setText("ALARM \n ON");
+            alarmButton.setText("ALARM\nON");
         } else {
             alarmButton.setEnabled(true);
             alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
-            alarmButton.setText("ALARM \n OFF");
+            alarmButton.setText("ALARM\nOFF");
         }
     }
-
-
 }
