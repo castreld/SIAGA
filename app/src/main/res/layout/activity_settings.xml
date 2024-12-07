@@ -1,70 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Settings"
-    android:orientation="vertical"
-    android:layout_gravity="center"
-    android:gravity="center">
+    android:fillViewport="true">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="CUSTOM NOTIFICATION"
-        android:textColor="@color/black"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:layout_marginTop="-40dp"/>
+        android:orientation="vertical"
+        android:background="@color/background"
+        tools:context=".Settings">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="350dp"
-        android:layout_height="200dp"
-        android:background="@drawable/border_rounded_black"
-        app:boxBackgroundMode="none"
-        android:layout_gravity="center">
-
-        <com.google.android.material.textfield.TextInputEditText
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:hint="CUSTOM NOTIFICATION..."
-            android:textSize="15sp"
-            android:background="@null"
-            android:gravity="top|start"
-            android:padding="10dp"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:background="#222325">
 
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/backicons"
+                android:contentDescription="Back"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
 
-    <Button
-        android:id="@+id/submitButton"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/button_rounded_black"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="100dp"
-        android:text="SUBMIT"
-        android:textColor="@color/white"
-        android:textSize="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SETTINGS"
+                android:textColor="#ECF0F1"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="VIBRATION"
-        android:textColor="@color/black"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:layout_marginTop="100dp"
-        android:layout_marginRight="120dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <Switch
-        android:id="@+id/vibrationSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:scaleX="2.5"
-        android:scaleY="2.5"
-        android:layout_marginLeft="130dp"
-        android:layout_marginTop="-25dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MAX GAS THRESHOLD"
+                android:textColor="@color/colorTxt"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
 
-</LinearLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/card_minimalist"
+                android:elevation="2dp"
+                app:boxBackgroundMode="none">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/maxGasThresholdInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter Max Gas Threshold"
+                    android:inputType="number"
+                    android:textColor="@color/colorTxt"
+                    android:textColorHint="@color/colorTxt"
+                    android:padding="12dp"
+                    android:background="@null"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CUSTOM NOTIFICATION"
+                android:textColor="@color/colorTxt"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:background="@drawable/card_minimalist"
+                android:elevation="2dp"
+                app:boxBackgroundMode="none">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/customNotificationInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="Enter Custom Notification Message"
+                    android:textSize="15sp"
+                    android:background="@null"
+                    android:gravity="top|start"
+                    android:padding="12dp"
+                    android:textColor="@color/colorTxt"
+                    android:textColorHint="@color/colorTxt"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VIBRATION"
+                android:textColor="@color/colorTxt"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginLeft="20dp"/>
+
+            <Switch
+                android:id="@+id/vibrationSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleX="1.5"
+                android:scaleY="1.5"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="20dp"/>
+
+            <Button
+                android:id="@+id/submitButton"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/card_minimalist"
+                android:layout_marginTop="24dp"
+                android:text="SAVE SETTINGS"
+                android:textColor="@color/secColorTxt"
+                android:layout_marginLeft="60dp"
+                android:textSize="18sp"
+                android:elevation="2dp"
+                android:padding="12dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
