@@ -71,7 +71,7 @@
                     android:id="@+id/maxGasThresholdInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Enter Max Gas Threshold"
+                    android:hint="Recommendation Around 300 - 500"
                     android:inputType="number"
                     android:textColor="@color/colorTxt"
                     android:textColorHint="@color/colorTxt"

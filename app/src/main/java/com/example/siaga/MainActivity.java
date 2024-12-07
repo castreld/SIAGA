@@ -1,9 +1,11 @@
 package com.example.siaga;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,6 +38,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -44,12 +47,23 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+
 import com.example.siaga.NotificationService;
+
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+
 
 public class MainActivity extends AppCompatActivity {
     private TextView gasOutTextView;
@@ -66,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
     private String produkId = "78A3EE";
     private NotificationCompat.Builder builder;
     private NotificationManager notificationManager;
+    private Handler gasHandler = new Handler();  // Handler for periodic tasks
+    private int dataCount = 0;  // To keep track of x-axis positions in the chart
+    private ArrayList<Entry> gasEntries = new ArrayList<>();  // List to hold data entries
 
     private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
         @Override
@@ -92,16 +109,57 @@ public class MainActivity extends AppCompatActivity {
         lowestGas = findViewById(R.id.lowestGasOut);
         highestGas = findViewById(R.id.highestGasOut);
 
-        // Chart Section
+        // Chart Section Dummy
         gasChart = findViewById(R.id.gasChartOut);
-        LineDataSet lineDataSet1 = new LineDataSet(dataValues1(), "Data Set 1");
+        LineDataSet gasLineChartDummy = new LineDataSet(dataValues1(), "Gas Levels Dummy");
         List<ILineDataSet> dataSets = new ArrayList<>();
-        dataSets.add(lineDataSet1);
+        dataSets.add(gasLineChartDummy);
 
-        LineData data = new LineData(dataSets);
-        gasChart.setData(data);
+        LineData dataDummy = new LineData(dataSets);
+        gasChart.setData(dataDummy);
         gasChart.invalidate();
 
+        gasLineChartDummy.setLineWidth(4);
+        gasLineChartDummy.setCircleRadius(6);
+        gasLineChartDummy.setColor(Color.parseColor("#79B7FF"));
+        gasLineChartDummy.setCircleColor(Color.parseColor("#79B7FF"));
+        gasLineChartDummy.setDrawCircleHole(false);
+
+        // Chart Section
+        startMockDataTimer();
+
+        LineDataSet gasLineChart = new LineDataSet(new ArrayList<>(), "Gas Levels (PPM)");
+
+        gasLineChart.setLineWidth(4);
+        gasLineChart.setColor(Color.parseColor("#79B7FF"));
+        gasLineChart.setCircleColor(Color.parseColor("#79B7FF"));
+        gasLineChart.setCircleRadius(6);
+        gasLineChart.setDrawCircleHole(false);
+
+        LineData data = new LineData(gasLineChart);
+        gasChart.setData(data);
+
+        XAxis xAxis = gasChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(10);
+        xAxis.setGranularityEnabled(true);
+
+        YAxis yAxis = gasChart.getAxisLeft();
+        yAxis.setAxisMinimum(0f);
+
+        YAxis leftAxis = gasChart.getAxisLeft();
+        leftAxis.setAxisMinimum(0f);
+
+        gasChart.getAxisRight().setEnabled(false);
+        gasChart.setDragEnabled(true);
+        gasChart.setScaleEnabled(false);
+        gasChart.setAutoScaleMinMaxEnabled(false);
+        gasChart.getAxisLeft().setAxisMinimum(0f);
+
+        gasChart.invalidate();
+
+        // Client Section
         client = new OkHttpClient();
         handler = new Handler(Looper.getMainLooper());
         // Handle edge-to-edge insets
@@ -123,16 +181,16 @@ public class MainActivity extends AppCompatActivity {
         }
         builder = new NotificationCompat.Builder(this, "Alert")
                 .setSmallIcon(R.drawable.siaga)
-                .setContentTitle("PERINGATAN KUALITAS UDARA")
-                .setContentText("GAS BOCOR! SEGERA LAKUKAN TINDAKAN PENCEGAHAN DEMI KESELAMATAN ANDA!")
+                .setContentTitle("DANGEROUS AIR QUALITY ALERT")
+                .setContentText("GAS LEAKS! TAKE IMMEDIATE PRECAUTIONS FOR YOUR SAFETY!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setColor(ContextCompat.getColor(this, R.color.alertColor))
                 .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText("Adanya gas bahaya terdeteksi! Kadar gas mencapai tingkat berbahaya. Segera lakukan tindakan pencegahan untuk memastikan keselamatan.")); // Expanded text for more detail
+                        .bigText("Dangerous gas detected! Gas levels reach dangerous levels. Take immediate precautions to ensure safety."));
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
         Request request = new Request.Builder()
                 .url("https://siaga.site/api/apps/78A3EE").build();
@@ -196,6 +254,45 @@ public class MainActivity extends AppCompatActivity {
         return dataVals;
     }
 
+    private void startMockDataTimer() {
+        final Random random = new Random();  // Random generator for mock data
+        gasHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Generate a random air quality value between 0 and 400
+                int mockGasValue = random.nextInt(400);  // Random value between 0 and 400
+
+                // Create a new Entry for the chart (x is dataCount, y is the random air quality value)
+                Entry newEntry = new Entry(dataCount++, mockGasValue);
+
+                // Add the new entry to the chart's data
+                gasEntries.add(newEntry);
+
+                // Create a new LineDataSet using the updated gasEntries list
+                LineDataSet gasLineChart = new LineDataSet(gasEntries, "Gas Levels");
+
+                // Set properties of the chart (optional: modify LineDataSet properties here)
+                gasLineChart.setColor(Color.RED);  // Set the line color
+                gasLineChart.setLineWidth(2f);  // Set line thickness
+                gasLineChart.setDrawCircles(true);  // Draw circles at data points
+
+                // Create LineData object and add it to the chart
+                LineData data = new LineData(gasLineChart);
+                gasChart.setData(data);
+
+                // Invalidate the chart to refresh and display the updated data
+                gasChart.invalidate();
+
+                // Log the added mock data (optional for debugging)
+                Log.d("GasChart", "Added mock data: " + mockGasValue);
+
+                // Repeat the process every second
+                gasHandler.postDelayed(this, 1000); // Adjust the delay (1000ms = 1 second)
+            }
+        }, 1000); // Initial delay before first call (1000ms = 1 second)
+    }
+
+
     private void fetchGasValue() {
         String url = "https://siaga.site/api/apps/" + produkId;
 
@@ -226,8 +323,10 @@ public class MainActivity extends AppCompatActivity {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    // Update TextViews with air quality value
                                     gasOutTextView.setText(String.valueOf(airQuality));
 
+                                    // Update lowest and highest gas values
                                     if (airQuality > 0 && airQuality < lowestGasValue) {
                                         lowestGasValue = airQuality;
                                         lowestGas.setText(String.valueOf(lowestGasValue));
@@ -241,6 +340,30 @@ public class MainActivity extends AppCompatActivity {
                                     if (airQuality >= 300) {
                                         notificationManager.notify(10, builder.build());
                                     }
+
+                                    // Add the new entry to the dataset
+                                    long currentTime = System.currentTimeMillis();
+                                    Entry newEntry = new Entry(dataCount++, airQuality);
+
+                                    gasEntries.add(newEntry);
+
+                                    // Update LineDataSet with new entry
+                                    LineDataSet gasLineChart = new LineDataSet(gasEntries, "Gas Levels");
+
+                                    // Customize chart appearance
+                                    gasLineChart.setLineWidth(4);
+                                    gasLineChart.setColor(Color.parseColor("#79B7FF"));
+                                    gasLineChart.setCircleColor(Color.parseColor("#79B7FF"));
+                                    gasLineChart.setCircleRadius(6);
+                                    gasLineChart.setDrawCircleHole(false);
+
+                                    // Set new data to the chart
+                                    LineData data = new LineData(gasLineChart);
+                                    gasChart.setData(data);
+
+                                    // Notify chart to update
+                                    gasChart.notifyDataSetChanged();
+                                    gasChart.invalidate();
                                 }
                             });
                         } else {
@@ -256,13 +379,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Periodically fetch new data
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 fetchGasValue();
             }
-        }, 1000);
+        }, 1000);  // 1 second delay
     }
+
+
+
 
 
     private void settingButtonConfig() {

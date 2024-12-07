@@ -87,8 +87,8 @@ public class Settings extends AppCompatActivity {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(getApplicationContext(), channelID);
         builder.setSmallIcon(R.drawable.siaga)
-                .setContentTitle("VIBRASI BERHASIL DIAKTIFKAN!")
-                .setContentText("Vibrasi Notifikasi berhasil diaktifkan! sekarang Gadget anda akan bergetar ketika mendapat \n notifikasi dari kami!")
+                .setContentTitle("VIBRATION SYSTEM ACTIVATED")
+                .setContentText("Vibration on notification successfully activated! now your gadget will automatically vibrate when getting a notification from us!")
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
