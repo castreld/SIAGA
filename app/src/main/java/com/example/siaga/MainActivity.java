@@ -48,6 +48,7 @@ import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 public class MainActivity extends AppCompatActivity {
     private TextView gasOutTextView;
@@ -95,7 +96,10 @@ public class MainActivity extends AppCompatActivity {
         LineDataSet lineDataSet1 = new LineDataSet(dataValues1(), "Data Set 1");
         ArrayList<LineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet1);
+
         LineData data = new LineData(dataSets);
+        gasChart.setData(data);
+        gasChart.invalidate();
 
         client = new OkHttpClient();
         handler = new Handler(Looper.getMainLooper());
