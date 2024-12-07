@@ -78,6 +78,51 @@
                     android:padding="12dp"
                     android:background="@null"/>
             </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/maxGasThresholdOut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current Max Threshold : Value"
+                android:textColor="@color/colorTxt"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="15dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MIN GAS THRESHOLD"
+                android:textColor="@color/colorTxt"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/card_minimalist"
+                android:elevation="2dp"
+                app:boxBackgroundMode="none">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/minGasThresholdInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter Min Gas Threshold"
+                    android:inputType="number"
+                    android:textColor="@color/colorTxt"
+                    android:textColorHint="@color/colorTxt"
+                    android:padding="12dp"
+                    android:background="@null"/>
+            </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/minGasThresholdOut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current Min Threshold : Value"
+                android:textColor="@color/colorTxt"
+                android:textSize="13sp"
+                android:textStyle="bold"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -86,7 +131,7 @@
                 android:textColor="@color/colorTxt"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="25dp"
                 android:layout_marginBottom="8dp"/>
 
             <com.google.android.material.textfield.TextInputLayout

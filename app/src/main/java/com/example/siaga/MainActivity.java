@@ -34,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -44,6 +45,9 @@ import okhttp3.ResponseBody;
 
 import com.example.siaga.NotificationService;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 
 public class MainActivity extends AppCompatActivity {
     private TextView gasOutTextView;
@@ -85,6 +89,13 @@ public class MainActivity extends AppCompatActivity {
         gasOutTextView = findViewById(R.id.gasOut);
         lowestGas = findViewById(R.id.lowestGasOut);
         highestGas = findViewById(R.id.highestGasOut);
+
+        // Chart Section
+        gasChart = findViewById(R.id.gasChartOut);
+        LineDataSet lineDataSet1 = new LineDataSet(dataValues1(), "Data Set 1");
+        ArrayList<LineDataSet> dataSets = new ArrayList<>();
+        dataSets.add(lineDataSet1);
+        LineData data = new LineData(dataSets);
 
         client = new OkHttpClient();
         handler = new Handler(Looper.getMainLooper());
@@ -168,7 +179,17 @@ public class MainActivity extends AppCompatActivity {
         fetchGasValue();
     }
 
+    // Chart Section
+    private ArrayList<Entry> dataValues1() {
+        ArrayList<Entry> dataVals = new ArrayList<Entry>();
+        dataVals.add(new Entry(0,20));
+        dataVals.add(new Entry(1,24));
+        dataVals.add(new Entry(2,2));
+        dataVals.add(new Entry(3,10));
+        dataVals.add(new Entry(4,28));
 
+        return dataVals;
+    }
 
     private void fetchGasValue() {
         String url = "https://siaga.site/api/apps/" + produkId;
