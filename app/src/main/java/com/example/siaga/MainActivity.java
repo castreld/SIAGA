@@ -35,6 +35,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         // Chart Section
         gasChart = findViewById(R.id.gasChartOut);
         LineDataSet lineDataSet1 = new LineDataSet(dataValues1(), "Data Set 1");
-        ArrayList<LineDataSet> dataSets = new ArrayList<>();
+        List<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet1);
 
         LineData data = new LineData(dataSets);
