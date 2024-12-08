@@ -15,8 +15,11 @@ import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Switch;
+import android.widget.TextView;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,9 +33,12 @@ public class Settings extends AppCompatActivity {
     private static final String PREFS_NAME = "SettingsPrefs";
     private static final String VIBRATION_KEY = "vibration_switch_state";
     private Vibrator vibrator;
-
     boolean switchState;
-
+    EditText maxGasThresholdInput;
+    EditText productIdInput;
+    TextView maxGasThresholdOut;
+    private int highestThreshold;
+    private String produkId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +46,15 @@ public class Settings extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_settings);
 
+        highestThreshold = getIntent().getIntExtra("highestThreshold", 300);
+        produkId = getIntent().getStringExtra("produkId");
+
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        maxGasThresholdInput = findViewById(R.id.maxGasThresholdInput);
+        productIdInput = findViewById(R.id.productIdInput);
+        maxGasThresholdOut = findViewById(R.id.maxGasThresholdOut);
+
+        maxGasThresholdOut.setText("Current Max Threshold : " + highestThreshold);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -152,7 +166,20 @@ public class Settings extends AppCompatActivity {
     }
 
     private void performSubmitAction() {
-        // Fungsi ini buat submit notifikasi custom baru
+        Intent intent = new Intent(Settings.this, MainActivity.class);
+        if(maxGasThresholdInput.getText().equals("")) {
+
+        }else {
+            intent.putExtra("highestThreshold", maxGasThresholdInput.getText().toString());
+        }
+
+        if(productIdInput.getText().equals("")){
+            intent.putExtra("produkId", produkId);
+        }else {
+            intent.putExtra("produkId", productIdInput.getText().toString());
+        }
+
+        startActivity(intent);
     }
 
     private void saveSwitchState(boolean state) {

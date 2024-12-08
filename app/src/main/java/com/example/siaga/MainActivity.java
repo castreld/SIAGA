@@ -64,25 +64,24 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
-
 public class MainActivity extends AppCompatActivity {
     private TextView gasOutTextView;
     private TextView lowestGas;
     private TextView highestGas;
     private OkHttpClient client;
     private Handler handler;
-    LineChart gasChart; // CAN KAGAWEKEUN
+    LineChart gasChart;
     private Button fanButton;
     private Button alarmButton;
     private boolean isFanOn = false;
     private boolean isAlarmOn = false;
     final String TAG = "DEMO";
-    private String produkId = "78A3EE";
+    private String produkId;
     private NotificationCompat.Builder builder;
     private NotificationManager notificationManager;
-    private Handler gasHandler = new Handler();  // Handler for periodic tasks
-    private int dataCount = 0;  // To keep track of x-axis positions in the chart
-    private ArrayList<Entry> gasEntries = new ArrayList<>();  // List to hold data entries
+    private int dataCount = 0;
+    private ArrayList<Entry> gasEntries = new ArrayList<>();
+    private int highestThreshold = 0;
 
     private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
         @Override
@@ -95,9 +94,8 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
-    // Variables to store the lowest and highest gas values
-    private int lowestGasValue = Integer.MAX_VALUE; // Initialize to max value
-    private int highestGasValue = Integer.MIN_VALUE; // Initialize to min value
+    private int lowestGasValue = Integer.MAX_VALUE;
+    private int highestGasValue = Integer.MIN_VALUE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,24 +107,22 @@ public class MainActivity extends AppCompatActivity {
         lowestGas = findViewById(R.id.lowestGasOut);
         highestGas = findViewById(R.id.highestGasOut);
 
-        // Chart Section Dummy
-        gasChart = findViewById(R.id.gasChartOut);
-        LineDataSet gasLineChartDummy = new LineDataSet(dataValues1(), "Gas Levels Dummy");
-        List<ILineDataSet> dataSets = new ArrayList<>();
-        dataSets.add(gasLineChartDummy);
+        if(highestThreshold == 0) {
+            highestThreshold = 300;
+        }else {
+            highestThreshold = Integer.parseInt(getIntent().getStringExtra("highestThreshold"));
+        }
 
-        LineData dataDummy = new LineData(dataSets);
-        gasChart.setData(dataDummy);
-        gasChart.invalidate();
+        produkId = getIntent().getStringExtra("produkId");
 
-        gasLineChartDummy.setLineWidth(4);
-        gasLineChartDummy.setCircleRadius(6);
-        gasLineChartDummy.setColor(Color.parseColor("#79B7FF"));
-        gasLineChartDummy.setCircleColor(Color.parseColor("#79B7FF"));
-        gasLineChartDummy.setDrawCircleHole(false);
+        if (produkId == null || produkId.isEmpty()) {
+            Toast.makeText(MainActivity.this, "Product ID is missing or invalid.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // Chart Section
-        startMockDataTimer();
+        gasChart = findViewById(R.id.gasChartOut);
 
         LineDataSet gasLineChart = new LineDataSet(new ArrayList<>(), "Gas Levels (PPM)");
 
@@ -193,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
             activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
         Request request = new Request.Builder()
-                .url("https://siaga.site/api/apps/78A3EE").build();
+                .url("https://siaga.site/api/apps/" + produkId).build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -211,15 +207,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Initialize buttons
         fanButton = findViewById(R.id.fanButton);
         alarmButton = findViewById(R.id.alarmButton);
 
-        // Set click listeners to toggle button states
         fanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isFanOn = !isFanOn; // Toggle the state
+                isFanOn = !isFanOn;
                 updateFanButton();
             }
         });
@@ -227,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
         alarmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isAlarmOn = !isAlarmOn; // Toggle the state
+                isAlarmOn = !isAlarmOn;
                 updateAlarmButton();
             }
         });
@@ -235,63 +229,28 @@ public class MainActivity extends AppCompatActivity {
         Intent serviceIntent = new Intent(this, NotificationService.class);
         ContextCompat.startForegroundService(this, serviceIntent);
 
-        // Update buttons' initial states
         updateFanButton();
         updateAlarmButton();
         settingButtonConfig();
         fetchGasValue();
     }
 
-    // Chart Section
-    private ArrayList<Entry> dataValues1() {
-        ArrayList<Entry> dataVals = new ArrayList<Entry>();
-        dataVals.add(new Entry(0,20));
-        dataVals.add(new Entry(1,24));
-        dataVals.add(new Entry(2,2));
-        dataVals.add(new Entry(3,10));
-        dataVals.add(new Entry(4,28));
+    private void checkForDangerousGasLevel(int airQuality) {
+        final int DANGEROUS_GAS_THRESHOLD = highestThreshold;
 
-        return dataVals;
-    }
-
-    private void startMockDataTimer() {
-        final Random random = new Random();  // Random generator for mock data
-        gasHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // Generate a random air quality value between 0 and 400
-                int mockGasValue = random.nextInt(400);  // Random value between 0 and 400
-
-                // Create a new Entry for the chart (x is dataCount, y is the random air quality value)
-                Entry newEntry = new Entry(dataCount++, mockGasValue);
-
-                // Add the new entry to the chart's data
-                gasEntries.add(newEntry);
-
-                // Create a new LineDataSet using the updated gasEntries list
-                LineDataSet gasLineChart = new LineDataSet(gasEntries, "Gas Levels");
-
-                // Set properties of the chart (optional: modify LineDataSet properties here)
-                gasLineChart.setColor(Color.RED);  // Set the line color
-                gasLineChart.setLineWidth(2f);  // Set line thickness
-                gasLineChart.setDrawCircles(true);  // Draw circles at data points
-
-                // Create LineData object and add it to the chart
-                LineData data = new LineData(gasLineChart);
-                gasChart.setData(data);
-
-                // Invalidate the chart to refresh and display the updated data
-                gasChart.invalidate();
-
-                // Log the added mock data (optional for debugging)
-                Log.d("GasChart", "Added mock data: " + mockGasValue);
-
-                // Repeat the process every second
-                gasHandler.postDelayed(this, 1000); // Adjust the delay (1000ms = 1 second)
+        if (airQuality >= DANGEROUS_GAS_THRESHOLD) {
+            if (notificationManager != null) {
+                if (!isNotificationShowing) {
+                    isNotificationShowing = true;
+                    notificationManager.notify(1, builder.build());
+                }
             }
-        }, 1000); // Initial delay before first call (1000ms = 1 second)
+        } else {
+            isNotificationShowing = false;
+        }
     }
 
+    private boolean isNotificationShowing = false;
 
     private void fetchGasValue() {
         String url = "https://siaga.site/api/apps/" + produkId;
@@ -304,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.e("MainActivity", "Teu kacokot ey datana wkwkw", e);
+                Log.e("MainActivity", "Failed to fetch data", e);
             }
 
             @Override
@@ -323,10 +282,8 @@ public class MainActivity extends AppCompatActivity {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    // Update TextViews with air quality value
                                     gasOutTextView.setText(String.valueOf(airQuality));
 
-                                    // Update lowest and highest gas values
                                     if (airQuality > 0 && airQuality < lowestGasValue) {
                                         lowestGasValue = airQuality;
                                         lowestGas.setText(String.valueOf(lowestGasValue));
@@ -337,31 +294,25 @@ public class MainActivity extends AppCompatActivity {
                                         highestGas.setText(String.valueOf(highestGasValue));
                                     }
 
-                                    if (airQuality >= 300) {
-                                        notificationManager.notify(10, builder.build());
-                                    }
+                                    checkForDangerousGasLevel(airQuality);
 
-                                    // Add the new entry to the dataset
-                                    long currentTime = System.currentTimeMillis();
                                     Entry newEntry = new Entry(dataCount++, airQuality);
-
                                     gasEntries.add(newEntry);
 
-                                    // Update LineDataSet with new entry
-                                    LineDataSet gasLineChart = new LineDataSet(gasEntries, "Gas Levels");
+                                    if (gasEntries.size() > 7) {
+                                        gasEntries.remove(0);
+                                    }
 
-                                    // Customize chart appearance
+                                    LineDataSet gasLineChart = new LineDataSet(gasEntries, "Gas Levels");
                                     gasLineChart.setLineWidth(4);
-                                    gasLineChart.setColor(Color.parseColor("#79B7FF"));
-                                    gasLineChart.setCircleColor(Color.parseColor("#79B7FF"));
+                                    gasLineChart.setColor(Color.parseColor("#2C6CBC"));
+                                    gasLineChart.setCircleColor(Color.parseColor("#2C6CBC"));
                                     gasLineChart.setCircleRadius(6);
                                     gasLineChart.setDrawCircleHole(false);
 
-                                    // Set new data to the chart
                                     LineData data = new LineData(gasLineChart);
                                     gasChart.setData(data);
 
-                                    // Notify chart to update
                                     gasChart.notifyDataSetChanged();
                                     gasChart.invalidate();
                                 }
@@ -379,16 +330,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Periodically fetch new data
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 fetchGasValue();
             }
-        }, 1000);  // 1 second delay
+        }, 1000);
     }
-
-
 
 
 
@@ -398,7 +346,10 @@ public class MainActivity extends AppCompatActivity {
         settingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, Settings.class));
+                Intent intent = new Intent(MainActivity.this, Settings.class);
+                intent.putExtra("highestThreshold", highestThreshold);
+                intent.putExtra("produkId", produkId);
+                startActivity(intent);
             }
         });
     }
