@@ -9,6 +9,8 @@
     <color name="enableComp">#0D2748</color>
     <color name="colorCard">#46484F</color>
     <color name="colorTxt">#EEEEF0</color>
+    <color name="colorTxtPlaceholder">#80EEEEF0</color>
     <color name="secColorTxt">#B2B3BD</color>
+    <color name="secColorTxtPlaceholder">#80B2B3BD</color>
     <color name="lineChartColor">#255A9E</color>
 </resources>

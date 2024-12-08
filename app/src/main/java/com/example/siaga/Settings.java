@@ -79,6 +79,8 @@ public class Settings extends AppCompatActivity {
                 showConfirmationDialog();
             }
         });
+
+        wifiSettingButtonConfig();
     }
 
     public void makeNotification() {
@@ -175,5 +177,16 @@ public class Settings extends AppCompatActivity {
                 vibrator.vibrate(500);
             }
         }
+    }
+
+    private void wifiSettingButtonConfig() {
+        Button WifisettingButton = (Button) findViewById(R.id.wifiSetButton);
+
+        WifisettingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(Settings.this, WifiSetting.class));
+            }
+        });
     }
 }

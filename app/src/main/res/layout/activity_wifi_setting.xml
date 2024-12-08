@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WifiSetting"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/background"
+        tools:context=".Settings">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:background="#222325">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/backicons"
+                android:contentDescription="Back"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="WIFI SETTINGS"
+                android:textColor="#ECF0F1"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="95dp"
+                        android:background="@drawable/siaga" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="SIAGA"
+                        android:textColor="@color/colorTxt"
+                        android:textSize="48sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_margin="20dp"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SSID WiFi"
+                        android:textColor="@color/colorTxt"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/card_minimalist"
+                        android:elevation="2dp"
+                        app:boxBackgroundMode="none">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/ssidInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:hint="Your WiFi Name"
+                            android:gravity="top|start"
+                            android:inputType="number"
+                            android:padding="12dp"
+                            android:textColor="@color/colorTxt"
+                            android:textColorHint="@color/colorTxtPlaceholder" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Password WiFi"
+                        android:textColor="@color/colorTxt"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/card_minimalist"
+                        android:elevation="2dp"
+                        app:boxBackgroundMode="none">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/passInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:hint="Your WiFi Password"
+                            android:gravity="top|start"
+                            android:inputType="number"
+                            android:padding="12dp"
+                            android:textColor="@color/colorTxt"
+                            android:textColorHint="@color/colorTxtPlaceholder" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/card_minimalist"
+                        android:elevation="2dp"
+                        android:padding="12dp"
+                        android:layout_marginTop="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="List WiFi in your area"
+                            android:layout_gravity="start"
+                            android:textColor="@color/colorTxt"
+                            android:textSize="24sp"/>
+
+                        <ScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:layout_marginVertical="20dp"
+                                android:paddingBottom="20dp">
+
+                                <TextView
+                                    android:id="@+id/wifi1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="1"
+                                    android:textColor="@color/secColorTxt"
+                                    android:textSize="20sp"
+                                    android:background="@drawable/select_wifi_bg"
+                                    android:padding="10dp"
+                                    android:layout_marginBottom="10dp"/>
+
+                                <TextView
+                                    android:id="@+id/wifi2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="2"
+                                    android:textColor="@color/secColorTxt"
+                                    android:textSize="20sp"
+                                    android:background="@drawable/select_wifi_bg"
+                                    android:padding="10dp"
+                                    android:layout_marginBottom="10dp"/>
+
+                                <TextView
+                                    android:id="@+id/wifi3"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="3"
+                                    android:textColor="@color/secColorTxt"
+                                    android:textSize="20sp"
+                                    android:background="@drawable/select_wifi_bg"
+                                    android:padding="10dp"
+                                    android:layout_marginBottom="10dp"/>
+
+                            </LinearLayout>
+
+                        </ScrollView>
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/submitButton"
+                        android:layout_width="250dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/card_minimalist"
+                        android:layout_marginTop="24dp"
+                        android:text="SAVE SETTINGS"
+                        android:textColor="@color/secColorTxt"
+                        android:layout_gravity="center"
+                        android:textSize="18sp"
+                        android:elevation="2dp"
+                        android:padding="12dp"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+    </LinearLayout>
+
+</LinearLayout>

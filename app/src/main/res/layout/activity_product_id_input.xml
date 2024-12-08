@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ProductIdInput"
+    android:background="@color/background"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="95dp"
+            android:background="@drawable/siaga" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="SIAGA"
+            android:textColor="@color/colorTxt"
+            android:textSize="48sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Product ID"
+            android:textColor="@color/colorTxt"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_minimalist"
+            android:elevation="2dp"
+            app:boxBackgroundMode="none">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/productIdInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:hint="Your Product ID"
+                android:gravity="top|start"
+                android:inputType="number"
+                android:padding="12dp"
+                android:textColor="@color/secColorTxtPlaceholder"
+                android:textColorHint="@color/secColorTxtPlaceholder" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/submitButton"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_minimalist"
+            android:layout_marginTop="24dp"
+            android:text="SAVE PRODUCT ID"
+            android:textColor="@color/secColorTxt"
+            android:layout_gravity="center"
+            android:textSize="18sp"
+            android:elevation="2dp"
+            android:padding="12dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -50,14 +50,14 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="(SISTEM INDIKATOR ALARM GAS AKTIF)"
+        android:text="( SISTEM INDIKATOR ALARM GAS AKTIF )"
         android:textColor="@color/secColorTxt"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.525"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.679" />
+        app:layout_constraintVertical_bias="0.680" />
 
     <TextView
         android:id="@+id/textView"
@@ -65,10 +65,11 @@
         android:layout_height="wrap_content"
         android:text="SIAGA"
         android:textColor="@color/colorTxt"
+        android:textStyle="bold"
         android:textSize="55dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.476"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.64" />

@@ -48,8 +48,32 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="95dp"
+                android:background="@drawable/siaga" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="SIAGA"
+                android:textColor="@color/colorTxt"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_margin="20dp"
+            android:padding="5dp">
+
 
             <TextView
                 android:layout_width="wrap_content"
@@ -71,19 +95,21 @@
                     android:id="@+id/maxGasThresholdInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Recommendation Around 300 - 500"
+                    android:background="@null"
+                    android:hint="Recommendation around 300 - 500"
+                    android:gravity="top|start"
                     android:inputType="number"
-                    android:textColor="@color/colorTxt"
-                    android:textColorHint="@color/colorTxt"
                     android:padding="12dp"
-                    android:background="@null"/>
+                    android:textColor="@color/colorTxt"
+                    android:textColorHint="@color/colorTxtPlaceholder" />
+
             </com.google.android.material.textfield.TextInputLayout>
             <TextView
                 android:id="@+id/maxGasThresholdOut"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Current Max Threshold : Value"
-                android:textColor="@color/colorTxt"
+                android:textColor="@color/secColorTxt"
                 android:textSize="13sp"
                 android:textStyle="bold"/>
 
@@ -109,12 +135,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="Enter Custom Notification Message"
-                    android:textSize="15sp"
                     android:background="@null"
                     android:gravity="top|start"
                     android:padding="12dp"
                     android:textColor="@color/colorTxt"
-                    android:textColorHint="@color/colorTxt"/>
+                    android:textColorHint="@color/colorTxtPlaceholder"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
@@ -124,17 +149,59 @@
                 android:textColor="@color/colorTxt"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginLeft="20dp"/>
+                android:layout_marginTop="24dp"/>
 
             <Switch
                 android:id="@+id/vibrationSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:scaleX="1.5"
-                android:scaleY="1.5"
-                android:layout_marginTop="8dp"
-                android:layout_marginLeft="20dp"/>
+                android:scaleX="1.25"
+                android:scaleY="1.25"
+                android:layout_margin="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Product ID"
+                    android:textColor="@color/colorTxt"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/card_minimalist"
+                    android:elevation="2dp"
+                    app:boxBackgroundMode="none">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/productIdInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:hint="Your Product ID"
+                        android:gravity="top|start"
+                        android:inputType="number"
+                        android:padding="12dp"
+                        android:textColor="@color/secColorTxtPlaceholder"
+                        android:textColorHint="@color/secColorTxtPlaceholder" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/wifiSetButton"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/card_minimalist"
+                android:layout_marginTop="24dp"
+                android:text="WiFi SETTINGS"
+                android:textColor="@color/secColorTxt"
+                android:layout_gravity="center"
+                android:textSize="18sp"
+                android:elevation="2dp"
+                android:padding="12dp"/>
 
             <Button
                 android:id="@+id/submitButton"
@@ -144,7 +211,7 @@
                 android:layout_marginTop="24dp"
                 android:text="SAVE SETTINGS"
                 android:textColor="@color/secColorTxt"
-                android:layout_marginLeft="60dp"
+                android:layout_gravity="center"
                 android:textSize="18sp"
                 android:elevation="2dp"
                 android:padding="12dp"/>
