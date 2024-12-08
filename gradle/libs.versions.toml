@@ -10,6 +10,7 @@ constraintlayout = "2.1.4"
 okhttp = "2.7.5"
 okhttpVersion = "5.0.0-alpha.14"
 core = "2.2.0"
+gson = "2.11.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -22,6 +23,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 okhttp = { group = "com.squareup.okhttp", name = "okhttp", version.ref = "okhttp" }
 okhttp3-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttpVersion" }
 core = { group = "androidx.core", name = "core", version.ref = "core" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

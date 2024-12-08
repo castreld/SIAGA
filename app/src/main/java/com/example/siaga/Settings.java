@@ -30,7 +30,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class Settings extends AppCompatActivity {
     private Switch vibrationSwitch;
-    private static final String PREFS_NAME = "SettingsPrefs";
+    private static final String PREFS_NAME = "productPrefs";
     private static final String VIBRATION_KEY = "vibration_switch_state";
     private Vibrator vibrator;
     boolean switchState;
@@ -47,11 +47,13 @@ public class Settings extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         highestThreshold = getIntent().getIntExtra("highestThreshold", 300);
-        produkId = getIntent().getStringExtra("produkId");
+        SharedPreferences sharedPreferences = getSharedPreferences("productPrefs", Context.MODE_PRIVATE);
+        produkId = sharedPreferences.getString("productId", null);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         maxGasThresholdInput = findViewById(R.id.maxGasThresholdInput);
         productIdInput = findViewById(R.id.productIdInput);
+        productIdInput.setText(produkId);
         maxGasThresholdOut = findViewById(R.id.maxGasThresholdOut);
 
         maxGasThresholdOut.setText("Current Max Threshold : " + highestThreshold);
@@ -167,19 +169,29 @@ public class Settings extends AppCompatActivity {
 
     private void performSubmitAction() {
         Intent intent = new Intent(Settings.this, MainActivity.class);
-        if(maxGasThresholdInput.getText().equals("")) {
 
-        }else {
-            intent.putExtra("highestThreshold", maxGasThresholdInput.getText().toString());
+        String maxThresholdInput = maxGasThresholdInput.getText().toString().trim();
+        if (!maxThresholdInput.isEmpty()) {
+            intent.putExtra("highestThreshold", Integer.parseInt(maxThresholdInput));
         }
 
-        if(productIdInput.getText().equals("")){
-            intent.putExtra("produkId", produkId);
-        }else {
-            intent.putExtra("produkId", productIdInput.getText().toString());
+        String newProductId = productIdInput.getText().toString().trim();
+        if (!newProductId.isEmpty()) {
+            saveProductId(newProductId);
+            produkId = newProductId;
         }
+
+        intent.putExtra("produkId", produkId);
 
         startActivity(intent);
+        finish();
+    }
+
+    private void saveProductId(String productId) {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("productId", productId);
+        editor.apply();
     }
 
     private void saveSwitchState(boolean state) {

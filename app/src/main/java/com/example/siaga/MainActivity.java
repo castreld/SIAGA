@@ -3,7 +3,9 @@ package com.example.siaga;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -20,7 +22,6 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +32,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.content.ContextCompat;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +46,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -47,55 +54,38 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-
-import com.example.siaga.NotificationService;
-
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.utils.ColorTemplate;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-
 public class MainActivity extends AppCompatActivity {
-    private TextView gasOutTextView;
-    private TextView lowestGas;
-    private TextView highestGas;
-    private OkHttpClient client;
-    private Handler handler;
-    LineChart gasChart;
-    private Button fanButton;
-    private Button alarmButton;
-    private boolean isFanOn = false;
-    private boolean isAlarmOn = false;
-    final String TAG = "DEMO";
-    private String produkId;
-    private NotificationCompat.Builder builder;
+
+    private static final String TAG = "MainActivity";
+    private static final int REFRESH_INTERVAL_MS = 3000;
+
+    private TextView gasOutTextView, lowestGas, highestGas;
+    private LineChart gasChart;
+    private Button fanButton, alarmButton;
     private NotificationManager notificationManager;
+    private NotificationCompat.Builder notificationBuilder;
+
+    private OkHttpClient httpClient;
+    private Handler handler;
+    private ArrayList<Entry> gasEntries;
     private int dataCount = 0;
-    private ArrayList<Entry> gasEntries = new ArrayList<>();
-    private int highestThreshold = 0;
-
-    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-        @Override
-        public void onActivityResult(Boolean o) {
-            if (o) {
-                Toast.makeText(MainActivity.this, "Post notification permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(MainActivity.this, "Post notification permission not granted", Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
-
     private int lowestGasValue = Integer.MAX_VALUE;
     private int highestGasValue = Integer.MIN_VALUE;
+    private boolean isFanOn = false;
+    private boolean isAlarmOn = false;
+    private boolean isNotificationShowing = false;
+    private int highestThreshold;
+    private String productId;
+
+    private final ActivityResultLauncher<String> permissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                    isGranted -> {
+                        if (isGranted) {
+                            Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,46 +93,117 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        initViews();
+        initNotificationChannel();
+        setupGasChart();
+        fetchConfigData();
+        fetchGasValuePeriodically();
+        setupButtonListeners();
+        startNotificationService();
+    }
+
+    private void initViews() {
         gasOutTextView = findViewById(R.id.gasOut);
         lowestGas = findViewById(R.id.lowestGasOut);
         highestGas = findViewById(R.id.highestGasOut);
+        gasChart = findViewById(R.id.gasChartOut);
+        fanButton = findViewById(R.id.fanButton);
+        alarmButton = findViewById(R.id.alarmButton);
 
-        if(highestThreshold == 0) {
-            highestThreshold = 300;
-        }else {
-            highestThreshold = Integer.parseInt(getIntent().getStringExtra("highestThreshold"));
-        }
+        handler = new Handler(Looper.getMainLooper());
+        httpClient = new OkHttpClient();
+        gasEntries = new ArrayList<>();
 
-        produkId = getIntent().getStringExtra("produkId");
+        SharedPreferences sharedPreferences = getSharedPreferences("productPrefs", Context.MODE_PRIVATE);
+        productId = sharedPreferences.getString("productId", null);
 
-        if (produkId == null || produkId.isEmpty()) {
-            Toast.makeText(MainActivity.this, "Product ID is missing or invalid.", Toast.LENGTH_SHORT).show();
-            finish();
+        if (productId == null || productId.isEmpty()) {
+            Toast.makeText(this, "Product ID is missing or invalid.", Toast.LENGTH_SHORT).show();
+            redirectToProductIdInput();
+
             return;
         }
 
-        // Chart Section
-        gasChart = findViewById(R.id.gasChartOut);
+        validateProductId(sharedPreferences);
+        highestThreshold = getIntent().getIntExtra("highestThreshold", 300);
+    }
 
-        LineDataSet gasLineChart = new LineDataSet(new ArrayList<>(), "Gas Levels (PPM)");
+    private void validateProductId(SharedPreferences sharedPreferences) {
+        String url = "https://siaga.site/api/apps/" + productId;
 
-        gasLineChart.setLineWidth(4);
-        gasLineChart.setColor(Color.parseColor("#79B7FF"));
-        gasLineChart.setCircleColor(Color.parseColor("#79B7FF"));
-        gasLineChart.setCircleRadius(6);
-        gasLineChart.setDrawCircleHole(false);
+        Request request = new Request.Builder().url(url).build();
 
-        LineData data = new LineData(gasLineChart);
-        gasChart.setData(data);
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Kesalahan jaringan: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    redirectToProductIdInput();
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        boolean success = jsonObject.getBoolean("success");
+
+                        runOnUiThread(() -> {
+                            if (!success) {
+                                Toast.makeText(MainActivity.this, "Product ID tidak valid. Harap masukkan ulang.", Toast.LENGTH_SHORT).show();
+                                sharedPreferences.edit().remove("productId").apply();
+                                redirectToProductIdInput();
+                            }
+                        });
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Error parsing JSON", e);
+                        runOnUiThread(() -> redirectToProductIdInput());
+                    }
+                } else {
+                    runOnUiThread(() -> {
+                        Toast.makeText(MainActivity.this, "Gagal memvalidasi Product ID.", Toast.LENGTH_SHORT).show();
+                        redirectToProductIdInput();
+                    });
+                }
+            }
+        });
+    }
+
+    private void redirectToProductIdInput() {
+        Intent intent = new Intent(MainActivity.this, ProductIdInput.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void initNotificationChannel() {
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "Alert", "Air Quality Alerts", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Notifications for dangerous gas levels.");
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        notificationBuilder = new NotificationCompat.Builder(this, "Alert")
+                .setSmallIcon(R.drawable.siaga)
+                .setContentTitle("Dangerous Gas Alert!")
+                .setContentText("Gas levels are dangerously high. Take immediate precautions.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setColor(ContextCompat.getColor(this, R.color.alertColor))
+                .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(
+                        "Dangerous gas detected! Ensure safety immediately."));
+    }
+
+    private void setupGasChart() {
+        gasChart.getDescription().setEnabled(false);
+        gasChart.getLegend().setEnabled(false);
 
         XAxis xAxis = gasChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
-        xAxis.setLabelCount(10);
-        xAxis.setGranularityEnabled(true);
-
-        YAxis yAxis = gasChart.getAxisLeft();
-        yAxis.setAxisMinimum(0f);
+        xAxis.setLabelCount(5);
 
         YAxis leftAxis = gasChart.getAxisLeft();
         leftAxis.setAxisMinimum(0f);
@@ -150,231 +211,124 @@ public class MainActivity extends AppCompatActivity {
         gasChart.getAxisRight().setEnabled(false);
         gasChart.setDragEnabled(true);
         gasChart.setScaleEnabled(false);
-        gasChart.setAutoScaleMinMaxEnabled(false);
-        gasChart.getAxisLeft().setAxisMinimum(0f);
+    }
 
-        gasChart.invalidate();
-
-        // Client Section
-        client = new OkHttpClient();
-        handler = new Handler(Looper.getMainLooper());
-        // Handle edge-to-edge insets
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        // NOTIFIKASI
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    "Alert",
-                    "Air Quality Alerts",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("Notification for Air Quality Alerts");
-            notificationManager.createNotificationChannel(channel);
+    private void fetchConfigData() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
-        builder = new NotificationCompat.Builder(this, "Alert")
-                .setSmallIcon(R.drawable.siaga)
-                .setContentTitle("DANGEROUS AIR QUALITY ALERT")
-                .setContentText("GAS LEAKS! TAKE IMMEDIATE PRECAUTIONS FOR YOUR SAFETY!")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true)
-                .setColor(ContextCompat.getColor(this, R.color.alertColor))
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText("Dangerous gas detected! Gas levels reach dangerous levels. Take immediate precautions to ensure safety."));
+    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-        }
-        Request request = new Request.Builder()
-                .url("https://siaga.site/api/apps/" + produkId).build();
+    private void fetchGasValuePeriodically() {
+        String url = "https://siaga.site/api/apps/" + productId;
+        Request request = new Request.Builder().url(url).build();
 
-        client.newCall(request).enqueue(new Callback() {
+        httpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
+                Log.e(TAG, "Failed to fetch gas values", e);
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        if (jsonObject.getBoolean("success")) {
+                            JSONArray messageArray = jsonObject.getJSONArray("message");
+                            JSONObject data = messageArray.getJSONObject(0);
+                            int airQuality = data.getInt("suhu");
 
-                if (response.isSuccessful()) {
-                    ResponseBody responseBody = response.body();
-                    Log.d(TAG, "onResponse: " + responseBody.string());
+                            handler.post(() -> updateGasData(airQuality));
+                        }
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Error parsing JSON", e);
+                    }
+                } else {
+                    Log.e(TAG, "Unexpected response: " + response.code());
                 }
             }
         });
 
-        fanButton = findViewById(R.id.fanButton);
-        alarmButton = findViewById(R.id.alarmButton);
+        handler.postDelayed(this::fetchGasValuePeriodically, REFRESH_INTERVAL_MS);
+    }
 
-        fanButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                isFanOn = !isFanOn;
-                updateFanButton();
-            }
-        });
+    private void updateGasData(int airQuality) {
+        gasOutTextView.setText(String.valueOf(airQuality));
 
-        alarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                isAlarmOn = !isAlarmOn;
-                updateAlarmButton();
-            }
-        });
+        if (airQuality > 0 && airQuality < lowestGasValue) {
+            lowestGasValue = airQuality;
+            lowestGas.setText(String.valueOf(lowestGasValue));
+        }
 
-        Intent serviceIntent = new Intent(this, NotificationService.class);
-        ContextCompat.startForegroundService(this, serviceIntent);
+        if (airQuality > highestGasValue) {
+            highestGasValue = airQuality;
+            highestGas.setText(String.valueOf(highestGasValue));
+        }
 
-        updateFanButton();
-        updateAlarmButton();
-        settingButtonConfig();
-        fetchGasValue();
+        checkForDangerousGasLevel(airQuality);
+
+        gasEntries.add(new Entry(dataCount++, airQuality));
+        if (gasEntries.size() > 7) gasEntries.remove(0);
+
+        LineDataSet lineDataSet = new LineDataSet(gasEntries, "Gas Levels");
+        lineDataSet.setLineWidth(4);
+        lineDataSet.setColor(Color.parseColor("#2C6CBC"));
+        lineDataSet.setCircleColor(Color.parseColor("#2C6CBC"));
+
+        gasChart.setData(new LineData(lineDataSet));
+        gasChart.invalidate();
     }
 
     private void checkForDangerousGasLevel(int airQuality) {
-        final int DANGEROUS_GAS_THRESHOLD = highestThreshold;
-
-        if (airQuality >= DANGEROUS_GAS_THRESHOLD) {
-            if (notificationManager != null) {
-                if (!isNotificationShowing) {
-                    isNotificationShowing = true;
-                    notificationManager.notify(1, builder.build());
-                }
+        if (airQuality >= highestThreshold) {
+            if (!isNotificationShowing) {
+                isNotificationShowing = true;
+                notificationManager.notify(1, notificationBuilder.build());
             }
         } else {
             isNotificationShowing = false;
         }
     }
 
-    private boolean isNotificationShowing = false;
-
-    private void fetchGasValue() {
-        String url = "https://siaga.site/api/apps/" + produkId;
-
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.e("MainActivity", "Failed to fetch data", e);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    try {
-                        String responseData = response.body().string();
-                        JSONObject jsonObject = new JSONObject(responseData);
-
-                        if (jsonObject.getInt("status") == 200) {
-                            JSONArray messageArray = jsonObject.getJSONArray("message");
-                            JSONObject data = messageArray.getJSONObject(0);
-
-                            final int airQuality = data.getInt("suhu");
-
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    gasOutTextView.setText(String.valueOf(airQuality));
-
-                                    if (airQuality > 0 && airQuality < lowestGasValue) {
-                                        lowestGasValue = airQuality;
-                                        lowestGas.setText(String.valueOf(lowestGasValue));
-                                    }
-
-                                    if (airQuality > highestGasValue) {
-                                        highestGasValue = airQuality;
-                                        highestGas.setText(String.valueOf(highestGasValue));
-                                    }
-
-                                    checkForDangerousGasLevel(airQuality);
-
-                                    Entry newEntry = new Entry(dataCount++, airQuality);
-                                    gasEntries.add(newEntry);
-
-                                    if (gasEntries.size() > 7) {
-                                        gasEntries.remove(0);
-                                    }
-
-                                    LineDataSet gasLineChart = new LineDataSet(gasEntries, "Gas Levels");
-                                    gasLineChart.setLineWidth(4);
-                                    gasLineChart.setColor(Color.parseColor("#2C6CBC"));
-                                    gasLineChart.setCircleColor(Color.parseColor("#2C6CBC"));
-                                    gasLineChart.setCircleRadius(6);
-                                    gasLineChart.setDrawCircleHole(false);
-
-                                    LineData data = new LineData(gasLineChart);
-                                    gasChart.setData(data);
-
-                                    gasChart.notifyDataSetChanged();
-                                    gasChart.invalidate();
-                                }
-                            });
-                        } else {
-                            Log.e("MainActivity", "Error: " + jsonObject.getString("message"));
-                        }
-
-                    } catch (JSONException e) {
-                        Log.e("MainActivity", "JSON parsing error.", e);
-                    }
-                } else {
-                    Log.e("MainActivity", "Unexpected response code: " + response.code());
-                }
-            }
+    private void setupButtonListeners() {
+        fanButton.setOnClickListener(v -> {
+            isFanOn = !isFanOn;
+            updateFanButton();
         });
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                fetchGasValue();
-            }
-        }, 1000);
-    }
-
-
-
-    private void settingButtonConfig() {
-        ImageButton settingButton = (ImageButton) findViewById(R.id.settingButton);
-
-        settingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, Settings.class);
-                intent.putExtra("highestThreshold", highestThreshold);
-                intent.putExtra("produkId", produkId);
-                startActivity(intent);
-            }
+        alarmButton.setOnClickListener(v -> {
+            isAlarmOn = !isAlarmOn;
+            updateAlarmButton();
         });
+
+        ImageButton settingButton = findViewById(R.id.settingButton);
+        settingButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, Settings.class);
+            intent.putExtra("highestThreshold", highestThreshold);
+            intent.putExtra("productId", productId);
+            startActivity(intent);
+        });
+
+        updateFanButton();
+        updateAlarmButton();
     }
 
     private void updateFanButton() {
-        if (isFanOn) {
-            fanButton.setEnabled(true);
-            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
-            fanButton.setText("FAN\nON");
-        } else {
-            fanButton.setEnabled(true);
-            fanButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
-            fanButton.setText("FAN\nOFF");
-        }
+        fanButton.setText(isFanOn ? "FAN\nON" : "FAN\nOFF");
+        fanButton.setBackground(ContextCompat.getDrawable(this, isFanOn ?
+                R.drawable.button_rounded_enabled : R.drawable.button_rounded_disabled));
     }
 
     private void updateAlarmButton() {
-        if (isAlarmOn) {
-            alarmButton.setEnabled(true);
-            alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_enabled));
-            alarmButton.setText("ALARM\nON");
-        } else {
-            alarmButton.setEnabled(true);
-            alarmButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_rounded_disabled));
-            alarmButton.setText("ALARM\nOFF");
-        }
+        alarmButton.setText(isAlarmOn ? "ALARM\nON" : "ALARM\nOFF");
+        alarmButton.setBackground(ContextCompat.getDrawable(this, isAlarmOn ?
+                R.drawable.button_rounded_enabled : R.drawable.button_rounded_disabled));
+    }
+
+    private void startNotificationService() {
+        Intent serviceIntent = new Intent(this, NotificationService.class);
+        ContextCompat.startForegroundService(this, serviceIntent);
     }
 }
