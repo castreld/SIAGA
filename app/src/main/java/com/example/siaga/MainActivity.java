@@ -54,7 +54,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity {
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+public class MainActivity extends AppCompatActivity implements MqttManager.MqttCallbackHandler {
 
     private static final String TAG = "MainActivity";
     private static final int REFRESH_INTERVAL_MS = 3000;
@@ -77,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     private int highestThreshold;
     private String productId;
 
+    private MqttManager mqttManager;
+
     private final ActivityResultLauncher<String> permissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                     isGranted -> {
@@ -97,9 +102,65 @@ public class MainActivity extends AppCompatActivity {
         initNotificationChannel();
         setupGasChart();
         fetchConfigData();
-        fetchGasValuePeriodically();
+        // fetchGasValuePeriodically();
         setupButtonListeners();
         startNotificationService();
+        initMqtt();
+    }
+
+    private void initMqtt() {
+        String mqttBrokerUri = "mqtts://aa114d69a648467da8a56e7ba1b2bd56.s1.eu.hivemq.cloud:8883";
+        String clientId = "android_app_" + System.currentTimeMillis();
+        mqttManager = new MqttManager(getApplicationContext(), mqttBrokerUri, clientId, this);
+    }
+
+    @Override
+    public void onConnectSuccess() {
+        Log.i(TAG, "MQTT Connection Successful. Subscribing to topics...");
+        mqttManager.subscribe("gas_level");
+        mqttManager.subscribe("device_status");
+        Toast.makeText(this, "Connected to MQTT", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onConnectFailure(Throwable exception) {
+        Log.e(TAG, "MQTT Connection Failed: " + exception.getMessage());
+        Toast.makeText(this, "Failed to connect to MQTT: " + exception.getMessage(), Toast.LENGTH_LONG).show();
+        // Consider retrying the connection
+    }
+
+    @Override
+    public void onConnectionLost(Throwable cause) {
+        Log.w(TAG, "MQTT Connection Lost: " + cause.getMessage());
+        Toast.makeText(this, "MQTT Connection Lost: " + cause.getMessage(), Toast.LENGTH_SHORT).show();
+        // Consider attempting to reconnect
+    }
+
+    @Override
+    public void onMessageReceived(String topic, MqttMessage message) {
+        String payload = new String(message.getPayload());
+        Log.d(TAG, "Received MQTT message on topic '" + topic + "': " + payload);
+
+        if (topic.equals("gas_level")) {
+            try {
+                int airQuality = Integer.parseInt(payload);
+                runOnUiThread(() -> updateGasData(airQuality));
+            } catch (NumberFormatException e) {
+                Log.e(TAG, "Error parsing gas_level payload: " + payload, e);
+            }
+        } else if (topic.equals("device_status")) {
+            runOnUiThread(() -> {
+                // Handle device status updates here
+                Log.i(TAG, "Device Status: " + payload);
+                // You might want to update UI or app state based on device status
+                Toast.makeText(MainActivity.this, "Device Status: " + payload, Toast.LENGTH_SHORT).show();
+            });
+        }
+    }
+
+    @Override
+    public void onDeliveryComplete(IMqttDeliveryToken token) {
+        Log.i(TAG, "MQTT Message Delivery Complete (if publishing)");
     }
 
     private void initViews() {
