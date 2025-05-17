@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView gasOutTextView, lowestGas, highestGas;
     private LineChart gasChart;
-    private Button fanButton, alarmButton;
+    // private Button fanButton, alarmButton;
     private NotificationManager notificationManager;
     private NotificationCompat.Builder notificationBuilder;
 
@@ -150,8 +150,8 @@ public class MainActivity extends AppCompatActivity {
         lowestGas = findViewById(R.id.lowestGasOut);
         highestGas = findViewById(R.id.highestGasOut);
         gasChart = findViewById(R.id.gasChartOut);
-        fanButton = findViewById(R.id.fanButton);
-        alarmButton = findViewById(R.id.alarmButton);
+        // fanButton = findViewById(R.id.fanButton);
+        // alarmButton = findViewById(R.id.alarmButton);
 
         handler = new Handler(Looper.getMainLooper());
         httpClient = new OkHttpClient();
@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupButtonListeners() {
-        fanButton.setOnClickListener(v -> {
+        /* fanButton.setOnClickListener(v -> {
             isFanOn = !isFanOn;
             updateFanButton();
         });
@@ -344,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
         alarmButton.setOnClickListener(v -> {
             isAlarmOn = !isAlarmOn;
             updateAlarmButton();
-        });
+        }); */
 
         ImageButton settingButton = findViewById(R.id.settingButton);
         settingButton.setOnClickListener(v -> {
@@ -354,11 +354,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        updateFanButton();
-        updateAlarmButton();
+        // updateFanButton();
+        // updateAlarmButton();
     }
 
-    private void updateFanButton() {
+    /* private void updateFanButton() {
         fanButton.setText(isFanOn ? "FAN\nON" : "FAN\nOFF");
         fanButton.setBackground(ContextCompat.getDrawable(this, isFanOn ?
                 R.drawable.button_rounded_enabled : R.drawable.button_rounded_disabled));
@@ -368,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
         alarmButton.setText(isAlarmOn ? "ALARM\nON" : "ALARM\nOFF");
         alarmButton.setBackground(ContextCompat.getDrawable(this, isAlarmOn ?
                 R.drawable.button_rounded_enabled : R.drawable.button_rounded_disabled));
-    }
+    } */
 
     private void startNotificationService() {
         Intent serviceIntent = new Intent(this, NotificationService.class);
