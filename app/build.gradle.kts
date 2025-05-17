@@ -29,6 +29,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties")
+        }
+    }
 }
 
 dependencies {
@@ -43,7 +51,7 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
-    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0")
-    implementation("org.eclipse.paho:org.eclipse.paho.android.service:1.1.1")
+    implementation("com.hivemq:hivemq-mqtt-client:1.3.0")
+    implementation("com.android.support:support-v4:28.0.0")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

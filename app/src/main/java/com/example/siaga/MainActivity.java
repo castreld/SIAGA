@@ -54,13 +54,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import com.example.siaga.HiveMqttManager;
 
-public class MainActivity extends AppCompatActivity implements MqttManager.MqttCallbackHandler {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private static final int REFRESH_INTERVAL_MS = 3000;
+    private static final int REFRESH_INTERVAL_MS = 500;
 
     private TextView gasOutTextView, lowestGas, highestGas;
     private LineChart gasChart;
@@ -79,8 +78,8 @@ public class MainActivity extends AppCompatActivity implements MqttManager.MqttC
     private boolean isNotificationShowing = false;
     private int highestThreshold;
     private String productId;
-
-    private MqttManager mqttManager;
+    private HiveMqttManager mqttManager;
+    private String lastDeviceStatus = "";
 
     private final ActivityResultLauncher<String> permissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(),
@@ -109,58 +108,41 @@ public class MainActivity extends AppCompatActivity implements MqttManager.MqttC
     }
 
     private void initMqtt() {
-        String mqttBrokerUri = "mqtts://aa114d69a648467da8a56e7ba1b2bd56.s1.eu.hivemq.cloud:8883";
+        String brokerHost = "aa114d69a648467da8a56e7ba1b2bd56.s1.eu.hivemq.cloud";
+        int port = 8883;
         String clientId = "android_app_" + System.currentTimeMillis();
-        mqttManager = new MqttManager(getApplicationContext(), mqttBrokerUri, clientId, this);
-    }
+        String username = "SiagaCluster";
+        String password = "PVU9KineFU.r7H8";
 
-    @Override
-    public void onConnectSuccess() {
-        Log.i(TAG, "MQTT Connection Successful. Subscribing to topics...");
-        mqttManager.subscribe("gas_level");
-        mqttManager.subscribe("device_status");
-        Toast.makeText(this, "Connected to MQTT", Toast.LENGTH_SHORT).show();
-    }
+        mqttManager = new HiveMqttManager(brokerHost, port, clientId, username, password);
 
-    @Override
-    public void onConnectFailure(Throwable exception) {
-        Log.e(TAG, "MQTT Connection Failed: " + exception.getMessage());
-        Toast.makeText(this, "Failed to connect to MQTT: " + exception.getMessage(), Toast.LENGTH_LONG).show();
-        // Consider retrying the connection
-    }
-
-    @Override
-    public void onConnectionLost(Throwable cause) {
-        Log.w(TAG, "MQTT Connection Lost: " + cause.getMessage());
-        Toast.makeText(this, "MQTT Connection Lost: " + cause.getMessage(), Toast.LENGTH_SHORT).show();
-        // Consider attempting to reconnect
-    }
-
-    @Override
-    public void onMessageReceived(String topic, MqttMessage message) {
-        String payload = new String(message.getPayload());
-        Log.d(TAG, "Received MQTT message on topic '" + topic + "': " + payload);
-
-        if (topic.equals("gas_level")) {
-            try {
-                int airQuality = Integer.parseInt(payload);
-                runOnUiThread(() -> updateGasData(airQuality));
-            } catch (NumberFormatException e) {
-                Log.e(TAG, "Error parsing gas_level payload: " + payload, e);
-            }
-        } else if (topic.equals("device_status")) {
-            runOnUiThread(() -> {
-                // Handle device status updates here
-                Log.i(TAG, "Device Status: " + payload);
-                // You might want to update UI or app state based on device status
-                Toast.makeText(MainActivity.this, "Device Status: " + payload, Toast.LENGTH_SHORT).show();
-            });
-        }
-    }
-
-    @Override
-    public void onDeliveryComplete(IMqttDeliveryToken token) {
-        Log.i(TAG, "MQTT Message Delivery Complete (if publishing)");
+        mqttManager.connect(
+                () -> {
+                    Log.i(TAG, "MQTT Connection Successful. Subscribing to topics...");
+                    mqttManager.subscribe("gas_level", payload -> runOnUiThread(() -> {
+                        Log.i(TAG, "Received gas_level payload: " + payload);
+                        try {
+                            JSONObject obj = new JSONObject(payload);
+                            int airQuality = obj.getInt("gas_level");
+                            updateGasData(airQuality);
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Error parsing gas_level JSON: " + payload, e);
+                        }
+                    }));
+                    mqttManager.subscribe("device_status", payload -> runOnUiThread(() -> {
+                        Log.i(TAG, "Device Status: " + payload);
+                        if (!payload.equals(lastDeviceStatus)) {
+                            lastDeviceStatus = payload;
+                            Toast.makeText(MainActivity.this, "Device Status: " + payload, Toast.LENGTH_SHORT).show();
+                        }
+                    }));
+                    runOnUiThread(() -> Toast.makeText(this, "Connected to MQTT", Toast.LENGTH_SHORT).show());
+                },
+                exception -> runOnUiThread(() -> {
+                    Log.e(TAG, "MQTT Connection Failed: " + exception.getMessage());
+                    Toast.makeText(this, "Failed to connect to MQTT: " + exception.getMessage(), Toast.LENGTH_LONG).show();
+                })
+        );
     }
 
     private void initViews() {
@@ -281,39 +263,39 @@ public class MainActivity extends AppCompatActivity implements MqttManager.MqttC
         }
     }
 
-    private void fetchGasValuePeriodically() {
-        String url = "https://siaga.site/api/apps/" + productId;
-        Request request = new Request.Builder().url(url).build();
+    // private void fetchGasValuePeriodically() {
+    //     String url = "https://siaga.site/api/apps/" + productId;
+    //     Request request = new Request.Builder().url(url).build();
 
-        httpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.e(TAG, "Failed to fetch gas values", e);
-            }
+    //     httpClient.newCall(request).enqueue(new Callback() {
+    //         @Override
+    //         public void onFailure(@NonNull Call call, @NonNull IOException e) {
+    //             Log.e(TAG, "Failed to fetch gas values", e);
+    //         }
 
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful() && response.body() != null) {
-                    try {
-                        JSONObject jsonObject = new JSONObject(response.body().string());
-                        if (jsonObject.getBoolean("success")) {
-                            JSONArray messageArray = jsonObject.getJSONArray("message");
-                            JSONObject data = messageArray.getJSONObject(0);
-                            int airQuality = data.getInt("suhu");
+    //         @Override
+    //         public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+    //             if (response.isSuccessful() && response.body() != null) {
+    //                 try {
+    //                     JSONObject jsonObject = new JSONObject(response.body().string());
+    //                     if (jsonObject.getBoolean("success")) {
+    //                         JSONArray messageArray = jsonObject.getJSONArray("message");
+    //                         JSONObject data = messageArray.getJSONObject(0);
+    //                         int airQuality = data.getInt("suhu");
 
-                            handler.post(() -> updateGasData(airQuality));
-                        }
-                    } catch (JSONException e) {
-                        Log.e(TAG, "Error parsing JSON", e);
-                    }
-                } else {
-                    Log.e(TAG, "Unexpected response: " + response.code());
-                }
-            }
-        });
+    //                         handler.post(() -> updateGasData(airQuality));
+    //                     }
+    //                 } catch (JSONException e) {
+    //                     Log.e(TAG, "Error parsing JSON", e);
+    //                 }
+    //             } else {
+    //                 Log.e(TAG, "Unexpected response: " + response.code());
+    //             }
+    //         }
+    //     });
 
-        handler.postDelayed(this::fetchGasValuePeriodically, REFRESH_INTERVAL_MS);
-    }
+    //     handler.postDelayed(this::fetchGasValuePeriodically, REFRESH_INTERVAL_MS);
+    // }
 
     private void updateGasData(int airQuality) {
         gasOutTextView.setText(String.valueOf(airQuality));
